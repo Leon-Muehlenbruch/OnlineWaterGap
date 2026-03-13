@@ -35,6 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent  # OnlineWaterGap/
 JOBS_DIR = BASE_DIR / "jobs"
 UPLOADS_DIR = BASE_DIR / "uploads"
 PRESETS_DIR = Path(__file__).resolve().parent / "presets"
+INPUT_DATA_DIR = BASE_DIR / "input_data"
 JOBS_DIR.mkdir(exist_ok=True)
 UPLOADS_DIR.mkdir(exist_ok=True)
 PRESETS_DIR.mkdir(exist_ok=True)
@@ -320,6 +321,82 @@ def get_presets():
             })
 
     return presets
+
+
+@app.get("/api/input-datasets")
+def list_input_datasets():
+    """List available input datasets grouped by category.
+
+    Scans input_data/ for climate_forcing, water_use, and static_input
+    subdirectories and returns the files found in each.
+    """
+    categories = {
+        "climate_forcing": {
+            "label": "Climate Forcing",
+            "description": "Meteorological driving data (precipitation, temperature, radiation, etc.)",
+            "path": "input_data/climate_forcing/",
+        },
+        "water_use": {
+            "label": "Water Use",
+            "description": "Sectoral water withdrawal and consumption data",
+            "path": "input_data/water_use/",
+        },
+        "static_input": {
+            "label": "Static Land Data",
+            "description": "Land cover, soil, routing, and other static parameters",
+            "path": "input_data/static_input/",
+        },
+    }
+
+    datasets = []
+
+    # Check if input_data directory exists at all
+    if not INPUT_DATA_DIR.exists():
+        return {"datasets": [], "custom_upload_enabled": True}
+
+    # Build the default dataset bundle from what's on disk
+    bundle_files = {}
+    total_size_mb = 0
+    all_present = True
+
+    for cat_key, cat_info in categories.items():
+        cat_path = BASE_DIR / cat_info["path"]
+        files = []
+        if cat_path.exists():
+            for f in sorted(cat_path.iterdir()):
+                if f.is_file() and not f.name.startswith("."):
+                    size_mb = round(f.stat().st_size / (1024 * 1024), 1)
+                    total_size_mb += size_mb
+                    files.append({
+                        "name": f.name,
+                        "size_mb": size_mb,
+                    })
+        else:
+            all_present = False
+
+        bundle_files[cat_key] = {
+            "label": cat_info["label"],
+            "description": cat_info["description"],
+            "files": files,
+            "available": len(files) > 0,
+        }
+
+    if any(cat["available"] for cat in bundle_files.values()):
+        datasets.append({
+            "id": "gswp3-w5e5",
+            "name": "GSWP3-W5E5 (Default)",
+            "description": "Standard dataset: GSWP3-W5E5 climate forcing with matching water use data",
+            "total_size_mb": round(total_size_mb, 1),
+            "complete": all_present,
+            "categories": bundle_files,
+            "paths": {
+                "climate_forcing": "input_data/climate_forcing/",
+                "water_use": "input_data/water_use/",
+                "static_input": "input_data/static_input/",
+            },
+        })
+
+    return {"datasets": datasets, "custom_upload_enabled": True}
 
 
 @app.post("/api/simulate")
