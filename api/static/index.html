@@ -266,7 +266,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
                             View Results
                         </button>
-                        <a :href="'/api/result/' + currentJob"
+                        <a :href="API_BASE + '/api/result/' + currentJob"
                            class="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors inline-flex items-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                             Download ZIP
@@ -337,7 +337,7 @@
 
                         <!-- Download ZIP button (only for jobs) -->
                         <a x-show="viz.sourceId && viz.isJob" x-cloak
-                           :href="'/api/result/' + viz.sourceId"
+                           :href="API_BASE + '/api/result/' + viz.sourceId"
                            class="px-3 py-2 text-sm text-green-700 border border-green-300 rounded-lg hover:bg-green-50 transition-colors inline-flex items-center gap-1"
                            title="Download all results as ZIP">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -453,6 +453,12 @@
     </main>
 
     <script>
+    // If served from Vercel (or any non-API host), point to the Hetzner backend.
+    // If served directly from FastAPI, use relative paths.
+    const API_BASE = window.location.hostname === 'localhost' || window.location.port === '8000'
+        ? ''  // same-origin (local dev or served from FastAPI)
+        : 'http://178.104.60.97:8000';  // Hetzner backend
+
     function app() {
         return {
             // Top-level navigation
@@ -571,7 +577,7 @@
 
             async init() {
                 try {
-                    const res = await fetch('/api/presets');
+                    const res = await fetch(API_BASE + '/api/presets');
                     this.presets = await res.json();
                 } catch (e) {
                     console.warn('Could not load presets:', e);
@@ -655,7 +661,7 @@
             async startSimulation() {
                 if (this.validationError) return;
                 try {
-                    const res = await fetch('/api/simulate', {
+                    const res = await fetch(API_BASE + '/api/simulate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(this.buildPayload()),
@@ -684,7 +690,7 @@
             async pollStatus() {
                 if (!this.currentJob) return;
                 try {
-                    const res = await fetch(`/api/status/${this.currentJob}`);
+                    const res = await fetch(API_BASE + `/api/status/${this.currentJob}`);
                     const data = await res.json();
                     this.jobStatus = data.status;
                     this.logOutput = data.log_tail || '';
@@ -700,7 +706,7 @@
             async cancelSimulation() {
                 if (!this.currentJob) return;
                 try {
-                    await fetch(`/api/cancel/${this.currentJob}`, { method: 'POST' });
+                    await fetch(API_BASE + `/api/cancel/${this.currentJob}`, { method: 'POST' });
                     clearInterval(this.pollInterval);
                     this.jobStatus = 'failed';
                     this.logOutput += '\n\n--- Simulation cancelled ---';
@@ -722,8 +728,8 @@
             async initVisualizationPage() {
                 try {
                     const [jobsRes, uploadsRes] = await Promise.all([
-                        fetch('/api/jobs'),
-                        fetch('/api/uploads'),
+                        fetch(API_BASE + '/api/jobs'),
+                        fetch(API_BASE + '/api/uploads'),
                     ]);
                     this.viz.jobs = await jobsRes.json();
                     this.viz.uploads = await uploadsRes.json();
@@ -742,7 +748,7 @@
                 this.viewer.loading = true;
 
                 try {
-                    const res = await fetch(`/api/variables/${this.viz.sourceId}`);
+                    const res = await fetch(API_BASE + `/api/variables/${this.viz.sourceId}`);
                     this.viewer.variables = await res.json();
                     const keys = Object.keys(this.viewer.variables);
                     if (keys.length > 0) {
@@ -778,7 +784,7 @@
                 try {
                     const formData = new FormData();
                     formData.append('file', file);
-                    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                    const res = await fetch(API_BASE + '/api/upload', { method: 'POST', body: formData });
                     if (!res.ok) {
                         const err = await res.json();
                         this.viz.uploadError = err.detail || 'Upload failed';
@@ -802,7 +808,7 @@
                 if (!confirm('Delete this uploaded file?')) return;
                 const id = this.viz.sourceId;
                 try {
-                    await fetch(`/api/upload/${id}`, { method: 'DELETE' });
+                    await fetch(API_BASE + `/api/upload/${id}`, { method: 'DELETE' });
                     this.viz.uploads = this.viz.uploads.filter(u => u.upload_id !== id);
                     this.viz.sourceId = '';
                     this.stopPlay();
@@ -841,7 +847,7 @@
             loadMap() {
                 this.viewer.loading = true;
                 const sid = this.viz.sourceId;
-                let url = `/api/map/${sid}?var=${encodeURIComponent(this.viewer.selectedVar)}`;
+                let url = API_BASE + `/api/map/${sid}?var=${encodeURIComponent(this.viewer.selectedVar)}`;
                 if (this.viewer.selectedTime && !this.isStaticVar()) {
                     url += `&time=${encodeURIComponent(this.viewer.selectedTime)}`;
                 }
