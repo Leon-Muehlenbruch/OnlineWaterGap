@@ -1,2 +1,27 @@
 _build/
 New_Text_Document.txt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# macOS
+.DS_Store
+
+# Data (too large for Git — mounted as Docker volume)
+input_data/climate_forcing/**/*.nc
+input_data/climate_forcing/**/*.nc.nc
+input_data/water_use/*.nc4
+# Keep the directory structure
+!input_data/climate_forcing/**/.gitkeep
+!input_data/water_use/.gitkeep
+
+# Runtime directories
+jobs/
+uploads/
+output_data/
+
+# Deployment prompt (local only)
+DEPLOYMENT_PROMPT.md

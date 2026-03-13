@@ -1,0 +1,28 @@
+# Large data directories (mounted as volumes instead)
+input_data/
+output_data/
+jobs/
+uploads/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Docs & build artifacts
+docs/
+_build/
+*.egg-info/
+
+# OS files
+.DS_Store
+Thumbs.db

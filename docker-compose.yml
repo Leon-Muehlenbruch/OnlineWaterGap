@@ -1,0 +1,27 @@
+# ── ReWaterGAP Web Interface ──────────────────────────────────
+# Start:  docker compose up -d
+# Stop:   docker compose down
+# Logs:   docker compose logs -f
+# ──────────────────────────────────────────────────────────────
+services:
+  watergap:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount the large input data directory (9.6 GB) from host
+      # Change the left side to match your data location on the server
+      - ./input_data:/app/input_data:ro
+
+      # Persist simulation results and uploads across container restarts
+      - watergap-jobs:/app/jobs
+      - watergap-uploads:/app/uploads
+      - watergap-output:/app/output_data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+volumes:
+  watergap-jobs:
+  watergap-uploads:
+  watergap-output:

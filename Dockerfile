@@ -1,19 +1,32 @@
-# Use an official mamba/conda image as a base image
-FROM condaforge/mambaforge:23.3.1-1
-# FROM mambaorg/micromamba:2.0.5
+# ── ReWaterGAP Web Interface ──────────────────────────────────
+# Build:  docker compose build
+# Run:    docker compose up
+# ──────────────────────────────────────────────────────────────
+FROM python:3.10-slim
 
-# Set the working directory inside the container
+# System deps needed by netCDF4 / HDF5 / matplotlib
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libhdf5-dev libnetcdf-dev gcc g++ \
+        libfreetype6-dev libpng-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Clone the ReWaterGAP repository (depth=1 only loads the latest commit) into the working directory
-RUN git clone --depth=1 https://github.com/HydrologyFrankfurt/ReWaterGAP.git /app
+# Install Python dependencies (pinned from requirements.txt + web deps)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir fastapi "uvicorn[standard]" python-multipart
 
-# Install dependencies
-RUN mamba install --yes --file /app/requirements.txt -c conda-forge \
-    && mamba clean --all
+# Copy application code (input_data is excluded via .dockerignore)
+COPY . .
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+# Create directories the app expects
+RUN mkdir -p jobs uploads output_data
 
-# Run app.py when the container launches
-CMD ["python3", "run_watergap.py", "mounted_dir/Config_ReWaterGAP.json"]
+# The input_data directory is mounted at runtime via docker-compose
+# (see docker-compose.yml → volumes)
+
+EXPOSE 8000
+
+# Use production-grade uvicorn (no --reload in production)
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

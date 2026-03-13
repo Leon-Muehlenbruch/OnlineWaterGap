@@ -17,16 +17,26 @@
 
 
 import argparse
+import os
 
 
 def parse_cli():
     """
     Parse command line arguments.
 
+    In web mode (WATERGAP_CONFIG env var set), argparse is skipped
+    and a compatible namespace object is returned instead.
+
     Returns
     -------
     Command line argument
     """
+    # Web mode: skip argparse when WATERGAP_CONFIG is set
+    config_path = os.environ.get('WATERGAP_CONFIG')
+    if config_path is not None:
+        debug = os.environ.get('WATERGAP_DEBUG', 'false').lower() == 'true'
+        return argparse.Namespace(name=config_path, debug=debug)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('name', type=str, metavar='',
                         help='name of configuration file',)
