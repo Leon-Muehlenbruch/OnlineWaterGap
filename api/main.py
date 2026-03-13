@@ -363,12 +363,15 @@ def list_input_datasets():
         cat_path = BASE_DIR / cat_info["path"]
         files = []
         if cat_path.exists():
-            for f in sorted(cat_path.iterdir()):
-                if f.is_file() and not f.name.startswith("."):
+            # Recursively find all real data files (skip hidden, .gitkeep, temp)
+            for f in sorted(cat_path.rglob("*")):
+                if f.is_file() and not f.name.startswith(".") and f.name != ".gitkeep":
                     size_mb = round(f.stat().st_size / (1024 * 1024), 1)
                     total_size_mb += size_mb
+                    # Show path relative to category root
+                    rel = f.relative_to(cat_path)
                     files.append({
-                        "name": f.name,
+                        "name": str(rel),
                         "size_mb": size_mb,
                     })
         else:
