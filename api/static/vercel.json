@@ -4,6 +4,7 @@
   "outputDirectory": ".",
   "framework": null,
   "rewrites": [
+    { "source": "/api/:path*", "destination": "http://178.104.60.97:8000/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

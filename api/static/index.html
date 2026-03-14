@@ -541,9 +541,9 @@
     <script>
     // If served from Vercel (or any non-API host), point to the Hetzner backend.
     // If served directly from FastAPI, use relative paths.
-    const API_BASE = window.location.hostname === 'localhost' || window.location.port === '8000'
-        ? ''  // same-origin (local dev or served from FastAPI)
-        : 'http://178.104.60.97:8000';  // Hetzner backend
+    // Vercel rewrites /api/* to Hetzner, so we always use relative paths.
+    // Only use direct Hetzner URL if running locally without proxy.
+    const API_BASE = '';
 
     function app() {
         return {
