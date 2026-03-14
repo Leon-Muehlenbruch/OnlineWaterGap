@@ -11,6 +11,12 @@
         .toggle-bg { transition: background-color 0.2s; }
         .log-output { font-family: 'Courier New', monospace; font-size: 0.75rem; }
         .drop-zone.dragover { border-color: #3b82f6; background-color: #eff6ff; }
+        /* Info tooltip styles */
+        .info-btn { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #e0e7ff; color: #4f46e5; font-size: 11px; font-weight: 700; cursor: pointer; border: none; line-height: 1; flex-shrink: 0; transition: background 0.15s; }
+        .info-btn:hover { background: #c7d2fe; }
+        .info-box { margin-top: 8px; padding: 10px 14px; background: #f0f4ff; border: 1px solid #c7d2fe; border-radius: 8px; font-size: 0.8rem; color: #374151; line-height: 1.5; }
+        .info-box strong { color: #1e3a5f; }
+        .info-box code { background: #e0e7ff; padding: 1px 5px; border-radius: 4px; font-size: 0.75rem; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen" x-data="app()" x-init="init()">
@@ -77,8 +83,18 @@
 
                     <!-- Section: Input Data -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-1">Input Data</h2>
-                        <p class="text-sm text-gray-500 mb-4">Select the dataset bundle for your simulation</p>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h2 class="text-lg font-semibold text-gray-800">Input Data</h2>
+                            <button type="button" class="info-btn" @click="toggleHelp('inputdata')" title="What is this?">i</button>
+                        </div>
+                        <div x-show="openHelp === 'inputdata'" x-cloak class="info-box mb-4">
+                            WaterGAP requires three categories of input data:<br>
+                            <strong>Climate Forcing</strong> — Daily meteorological data: precipitation (pr), temperature (tas), downward longwave radiation (rlds), and downward shortwave radiation (rsds). Available from <a href="https://data.isimip.org/search/tree/ISIMIP3a/InputData/climate/atmosphere/" target="_blank" class="text-blue-600 underline">ISIMIP</a>. Data is organized in 10-year files. Leap days must be removed.<br>
+                            <strong>Water Use</strong> — Monthly sectoral water withdrawal and consumption data (irrigation surface water, irrigation water withdrawal, net abstractions from surface water and groundwater). Must match the chosen climate forcing dataset.<br>
+                            <strong>Static Land Data</strong> — Time-invariant parameters: land cover, soil properties, river routing tables, reservoir locations, continental area fractions, and calibration parameters.<br>
+                            <em>Important:</em> The parameter file must be calibrated for the same climate forcing dataset used in the simulation.
+                        </div>
+                        <p class="text-sm text-gray-500 mb-4" x-show="openHelp !== 'inputdata'">Select the dataset bundle for your simulation</p>
 
                         <!-- Dataset dropdown -->
                         <div class="mb-4">
@@ -163,71 +179,119 @@
 
                     <!-- Section: Simulation Mode -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Simulation Mode</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div>
-                                    <span class="text-sm font-medium text-gray-700">Anthropogenic Run</span>
-                                    <p class="text-xs text-gray-500">Include human water use</p>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h2 class="text-lg font-semibold text-gray-800">Simulation Mode</h2>
+                            <button type="button" class="info-btn" @click="toggleHelp('simmode')" title="What is this?">i</button>
+                        </div>
+                        <div x-show="openHelp === 'simmode'" x-cloak class="info-box mb-4">
+                            WaterGAP supports four simulation modes:<br>
+                            <strong>Naturalized Run</strong> — No human impacts. Disable Anthropogenic to compute natural flows and storages without human water use or reservoirs.<br>
+                            <strong>Standard Anthropogenic</strong> — Enable all options to simulate combined effects of human water use and man-made reservoirs on flows and storages.<br>
+                            <strong>Human Water Use Only</strong> — Enable Anthropogenic + Subtract Water Use, disable Reservoir Operation.<br>
+                            <strong>Reservoirs Only</strong> — Enable Anthropogenic + Reservoir Operation, disable Subtract Water Use.
+                        </div>
+                        <p class="text-xs text-gray-400 mb-4" x-show="openHelp !== 'simmode'">Click <span class="info-btn" style="display:inline;cursor:default;font-size:9px;width:14px;height:14px;">i</span> for details on each option.</p>
+
+                        <div class="space-y-3">
+                            <!-- Anthropogenic Run -->
+                            <div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-medium text-gray-700">Anthropogenic Run</span>
+                                        <button type="button" class="info-btn" @click="toggleHelp('ant')" title="Info">i</button>
+                                    </div>
+                                    <button type="button" @click="config.ant = !config.ant; onAntChanged()"
+                                            class="relative w-11 h-6 rounded-full transition-colors"
+                                            :class="config.ant ? 'bg-blue-600' : 'bg-gray-300'">
+                                        <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                              :class="config.ant ? 'translate-x-5' : ''"></span>
+                                    </button>
                                 </div>
-                                <button type="button" @click="config.ant = !config.ant; onAntChanged()"
-                                        class="relative w-11 h-6 rounded-full transition-colors"
-                                        :class="config.ant ? 'bg-blue-600' : 'bg-gray-300'">
-                                    <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                                          :class="config.ant ? 'translate-x-5' : ''"></span>
-                                </button>
+                                <div x-show="openHelp === 'ant'" x-cloak class="info-box">
+                                    When enabled, WaterGAP simulates <strong>human impacts</strong> on the water cycle. At least one of Subtract Water Use or Reservoir Operation must also be active. When disabled, a <strong>naturalized run</strong> is performed — computing flows and storages as they would occur without any human water use or man-made reservoirs.
+                                </div>
                             </div>
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <!-- Subtract Water Use -->
                                 <div>
-                                    <span class="text-sm font-medium text-gray-700">Subtract Water Use</span>
-                                    <p class="text-xs text-gray-500">subtract_use</p>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-medium text-gray-700">Subtract Water Use</span>
+                                            <button type="button" class="info-btn" @click="toggleHelp('subtract')" title="Info">i</button>
+                                        </div>
+                                        <button type="button" @click="config.subtract_use = !config.subtract_use"
+                                                :disabled="!config.ant"
+                                                class="relative w-11 h-6 rounded-full transition-colors"
+                                                :class="config.subtract_use ? 'bg-blue-600' : 'bg-gray-300'">
+                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                                  :class="config.subtract_use ? 'translate-x-5' : ''"></span>
+                                        </button>
+                                    </div>
+                                    <div x-show="openHelp === 'subtract'" x-cloak class="info-box">
+                                        Subtracts sectoral water consumption (irrigation, domestic, manufacturing, thermal power, livestock) from surface water and groundwater resources. This directly reduces river discharge, lake levels, and groundwater storage based on actual water demand.
+                                    </div>
                                 </div>
-                                <button type="button" @click="config.subtract_use = !config.subtract_use"
-                                        :disabled="!config.ant"
-                                        class="relative w-11 h-6 rounded-full transition-colors"
-                                        :class="config.subtract_use ? 'bg-blue-600' : 'bg-gray-300'">
-                                    <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                                          :class="config.subtract_use ? 'translate-x-5' : ''"></span>
-                                </button>
-                            </div>
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+
+                                <!-- Reservoir Operation -->
                                 <div>
-                                    <span class="text-sm font-medium text-gray-700">Reservoir Operation</span>
-                                    <p class="text-xs text-gray-500">res_opt</p>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-medium text-gray-700">Reservoir Operation</span>
+                                            <button type="button" class="info-btn" @click="toggleHelp('resopt')" title="Info">i</button>
+                                        </div>
+                                        <button type="button" @click="config.res_opt = !config.res_opt"
+                                                :disabled="!config.ant"
+                                                class="relative w-11 h-6 rounded-full transition-colors"
+                                                :class="config.res_opt ? 'bg-blue-600' : 'bg-gray-300'">
+                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                                  :class="config.res_opt ? 'translate-x-5' : ''"></span>
+                                        </button>
+                                    </div>
+                                    <div x-show="openHelp === 'resopt'" x-cloak class="info-box">
+                                        Includes the effects of <strong>man-made reservoirs and regulated lakes</strong> on river flow. Reservoirs alter the natural flow regime by storing water and releasing it according to operational rules. Their commissioning years determine when each reservoir becomes active during the simulation.
+                                    </div>
                                 </div>
-                                <button type="button" @click="config.res_opt = !config.res_opt"
-                                        :disabled="!config.ant"
-                                        class="relative w-11 h-6 rounded-full transition-colors"
-                                        :class="config.res_opt ? 'bg-blue-600' : 'bg-gray-300'">
-                                    <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                                          :class="config.res_opt ? 'translate-x-5' : ''"></span>
-                                </button>
-                            </div>
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+
+                                <!-- Delayed Use -->
                                 <div>
-                                    <span class="text-sm font-medium text-gray-700">Delayed Use</span>
-                                    <p class="text-xs text-gray-500">delayed_use</p>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-medium text-gray-700">Delayed Use</span>
+                                            <button type="button" class="info-btn" @click="toggleHelp('delayed')" title="Info">i</button>
+                                        </div>
+                                        <button type="button" @click="config.delayed_use = !config.delayed_use"
+                                                :disabled="!config.ant"
+                                                class="relative w-11 h-6 rounded-full transition-colors"
+                                                :class="config.delayed_use ? 'bg-blue-600' : 'bg-gray-300'">
+                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                                  :class="config.delayed_use ? 'translate-x-5' : ''"></span>
+                                        </button>
+                                    </div>
+                                    <div x-show="openHelp === 'delayed'" x-cloak class="info-box">
+                                        <strong>Temporal demand satisfaction:</strong> If surface water demand cannot be fully met on the current day, the unsatisfied portion is carried over to the next day. This allows WaterGAP to satisfy water demand across time steps rather than losing unmet demand immediately.
+                                    </div>
                                 </div>
-                                <button type="button" @click="config.delayed_use = !config.delayed_use"
-                                        :disabled="!config.ant"
-                                        class="relative w-11 h-6 rounded-full transition-colors"
-                                        :class="config.delayed_use ? 'bg-blue-600' : 'bg-gray-300'">
-                                    <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                                          :class="config.delayed_use ? 'translate-x-5' : ''"></span>
-                                </button>
-                            </div>
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+
+                                <!-- Neighbouring Cell -->
                                 <div>
-                                    <span class="text-sm font-medium text-gray-700">Neighbouring Cell Supply</span>
-                                    <p class="text-xs text-gray-500">neighbouring_cell</p>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-medium text-gray-700">Neighbouring Cell Supply</span>
+                                            <button type="button" class="info-btn" @click="toggleHelp('neighbour')" title="Info">i</button>
+                                        </div>
+                                        <button type="button" @click="config.neighbouring_cell = !config.neighbouring_cell"
+                                                :disabled="!config.ant"
+                                                class="relative w-11 h-6 rounded-full transition-colors"
+                                                :class="config.neighbouring_cell ? 'bg-blue-600' : 'bg-gray-300'">
+                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                                  :class="config.neighbouring_cell ? 'translate-x-5' : ''"></span>
+                                        </button>
+                                    </div>
+                                    <div x-show="openHelp === 'neighbour'" x-cloak class="info-box">
+                                        <strong>Spatial demand satisfaction:</strong> If a grid cell's own surface water resources are insufficient, water can be supplied from neighbouring grid cells. Together with the riparian supply option (always enabled by default), this allows WaterGAP to redistribute water demand spatially across the river network.
+                                    </div>
                                 </div>
-                                <button type="button" @click="config.neighbouring_cell = !config.neighbouring_cell"
-                                        :disabled="!config.ant"
-                                        class="relative w-11 h-6 rounded-full transition-colors"
-                                        :class="config.neighbouring_cell ? 'bg-blue-600' : 'bg-gray-300'">
-                                    <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                                          :class="config.neighbouring_cell ? 'translate-x-5' : ''"></span>
-                                </button>
                             </div>
                         </div>
                         <div x-show="config.ant && !config.subtract_use && !config.res_opt" x-cloak
@@ -238,7 +302,16 @@
 
                     <!-- Section: Simulation Period -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Simulation Period</h2>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h2 class="text-lg font-semibold text-gray-800">Simulation Period</h2>
+                            <button type="button" class="info-btn" @click="toggleHelp('period')" title="What is this?">i</button>
+                        </div>
+                        <div x-show="openHelp === 'period'" x-cloak class="info-box mb-4">
+                            <strong>Start/End Date</strong> — Define the time range for the simulation. Climate forcing data must cover this period (plus spin-up). WaterGAP runs at daily resolution.<br>
+                            <strong>Spin-up Years</strong> — Number of years to repeat the first year of forcing data before the actual simulation begins. This initializes model storages (soil moisture, groundwater, snow, etc.) to realistic levels. Typical value: 5 years.<br>
+                            <strong>Reservoir Start/End Year</strong> — Only relevant when Reservoir Operation is enabled. Defines the time window during which man-made reservoirs become operational according to their commissioning year. Reservoirs built outside this window are treated as natural lakes.
+                        </div>
+                        <p class="text-xs text-gray-400 mb-4" x-show="openHelp !== 'period'">Define the time range, spin-up, and reservoir operation period.</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
@@ -272,14 +345,26 @@
 
                     <!-- Section: Output Variables -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-lg font-semibold text-gray-800">Output Variables</h2>
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-lg font-semibold text-gray-800">Output Variables</h2>
+                                <button type="button" class="info-btn" @click="toggleHelp('outvars')" title="What is this?">i</button>
+                            </div>
                             <button type="button" @click="toggleAllOutputVars()"
                                     class="px-4 py-1.5 text-sm font-medium rounded-lg border transition-colors"
                                     :class="allOutputVarsOn() ? 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100' : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100'">
                                 Toggle All
                             </button>
                         </div>
+                        <div x-show="openHelp === 'outvars'" x-cloak class="info-box mb-4">
+                            Select which variables WaterGAP writes to NetCDF output files. Variables are grouped into four categories:<br>
+                            <strong>Vertical Water Balance — Fluxes:</strong> Water flows within each grid cell (evaporation, precipitation throughfall, snowmelt, surface runoff, groundwater recharge).<br>
+                            <strong>Vertical Water Balance — Storages:</strong> Water stored in vertical compartments (canopy, snow, soil).<br>
+                            <strong>Lateral Water Balance — Fluxes:</strong> Water flows between grid cells and water bodies (river discharge, lake/wetland outflows, groundwater discharge, water abstractions).<br>
+                            <strong>Lateral Water Balance — Storages:</strong> Water stored in rivers, lakes, wetlands, groundwater, and reservoirs.<br>
+                            <em>Enabling more variables increases output file size and computation time slightly.</em>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-3" x-show="openHelp !== 'outvars'">Toggle output variables per category. Hover over variable names for descriptions.</p>
 
                         <template x-for="[groupKey, groupLabel] in [['vb_fluxes','Vertical Water Balance — Fluxes'],['vb_storages','Vertical Water Balance — Storages'],['lb_fluxes','Lateral Water Balance — Fluxes'],['lb_storages','Lateral Water Balance — Storages']]" :key="groupKey">
                             <details class="mb-3" open>
@@ -289,8 +374,11 @@
                                 </summary>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 pl-1">
                                     <template x-for="key in Object.keys(config[groupKey])" :key="key">
-                                        <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50">
-                                            <span class="text-sm text-gray-600" x-text="key.replace(/_/g, ' ')"></span>
+                                        <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50" :title="varDescriptions[key] || ''">
+                                            <div>
+                                                <span class="text-sm text-gray-600" x-text="varDescriptions[key] ? varDescriptions[key].split(' — ')[0] : key.replace(/_/g, ' ')"></span>
+                                                <p class="text-xs text-gray-400" x-show="varDescriptions[key] && varDescriptions[key].includes(' — ')" x-text="varDescriptions[key] ? varDescriptions[key].split(' — ')[1] : ''"></p>
+                                            </div>
                                             <button type="button" @click="config[groupKey][key] = !config[groupKey][key]"
                                                     class="relative w-9 h-5 rounded-full transition-colors flex-shrink-0"
                                                     :class="config[groupKey][key] ? 'bg-blue-600' : 'bg-gray-300'">
@@ -581,6 +669,65 @@
                 playInterval: null,
             },
 
+            // Help tooltip state (which info box is open)
+            openHelp: '',
+
+            // Variable descriptions from WaterGAP glossary (name — description [unit])
+            varDescriptions: {
+                // VB Fluxes
+                pot_evap: 'Potential Evapotranspiration — Potential evapotranspiration over land and surface water [kg m⁻² s⁻¹]',
+                net_rad: 'Net Radiation — Net upward plus net downward radiation [kg m⁻² s⁻¹]',
+                leaf_area_index: 'Leaf Area Index — Simulated leaf area index of vegetation [–]',
+                canopy_evap: 'Canopy Evaporation — Evaporation from canopy interception storage [kg m⁻² s⁻¹]',
+                throughfall: 'Throughfall — Fraction of precipitation reaching the soil [kg m⁻² s⁻¹]',
+                snow_fall: 'Snowfall — Throughfall when temperature is below 0°C [kg m⁻² s⁻¹]',
+                snow_melt: 'Snow Melt — Water released from snowpack melting [kg m⁻² s⁻¹]',
+                snow_evap: 'Snow Evaporation — Evaporation/sublimation from snow [kg m⁻² s⁻¹]',
+                groundwater_recharge_diffuse: 'Diffuse GW Recharge — Groundwater recharge from soil percolation [kg m⁻² s⁻¹]',
+                surface_runoff: 'Surface Runoff — Fast surface and subsurface runoff, does not recharge groundwater [kg m⁻² s⁻¹]',
+                snowcover_frac: 'Snowcover Fraction — Fraction of grid cell covered by snow [–]',
+                // VB Storages
+                canopy_storage: 'Canopy Storage — Daily mean water stored in canopy [kg m⁻²]',
+                snow_water_equiv: 'Snow Water Equivalent — Total water mass of the snowpack [kg m⁻²]',
+                soil_moisture: 'Soil Moisture — Daily mean water storage in soil compartment [kg m⁻²]',
+                maximum_soil_moisture: 'Max Soil Moisture — Maximum soil water holding capacity [kg m⁻²]',
+                // LB Fluxes
+                consistent_precipitation: 'Consistent Precipitation — Precipitation used in the WaterGAP model [kg m⁻² s⁻¹]',
+                groundwater_discharge: 'Groundwater Discharge — Outflow from groundwater to surface waterbodies and rivers [kg m⁻² s⁻¹]',
+                total_runoff: 'Total Runoff — Sum of surface runoff and groundwater discharge [kg m⁻² s⁻¹]',
+                pot_cell_runoff: 'Potential Cell Runoff — Potential runoff before water use abstractions [kg m⁻² s⁻¹]',
+                groundwater_recharge_swb: 'Focused GW Recharge — Localized recharge below surface waterbodies [kg m⁻² s⁻¹]',
+                total_groundwater_recharge: 'Total GW Recharge — Sum of diffuse and focused groundwater recharge [kg m⁻² s⁻¹]',
+                local_lake_outflow: 'Local Lake Outflow — Outflow from local lakes (within-cell inflow) [kg m⁻² s⁻¹]',
+                local_wetland_outflow: 'Local Wetland Outflow — Outflow from local wetlands [kg m⁻² s⁻¹]',
+                global_lake_outflow: 'Global Lake Outflow — Outflow from global lakes (receive upstream flow) [kg m⁻² s⁻¹]',
+                global_wetland_outflow: 'Global Wetland Outflow — Outflow from global wetlands [kg m⁻² s⁻¹]',
+                streamflow: 'Streamflow — River discharge [m³ s⁻¹]',
+                streamflow_from_upstream: 'Upstream Streamflow — Discharge received from upstream cells [kg m⁻² s⁻¹]',
+                actual_net_abstr_groundwater: 'Net Abstraction GW — Actual total water consumption from groundwater [kg m⁻² s⁻¹]',
+                actual_net_abstr_surfacewater: 'Net Abstraction SW — Actual total water consumption from surface water [kg m⁻² s⁻¹]',
+                actual_water_consumption: 'Total Water Consumption — Sum of GW and SW abstractions [kg m⁻² s⁻¹]',
+                cell_aet_consuse: 'Evapotranspiration + Use — Actual ET including total water consumption [kg m⁻² s⁻¹]',
+                unsat_potnetabs_sw_from_demandcell: 'Unsatisfied SW Demand — Unmet surface water demand from demand cell',
+                returned_demand_from_supplycell: 'Returned Demand — Demand returned from neighbouring supply cell',
+                returned_demand_from_supplycell_nextday: 'Returned Demand (Next Day) — Delayed returned demand from supply cell',
+                demand_left_excl_returned_nextday: 'Remaining Demand — Demand left excluding next-day returns',
+                potnetabs_sw: 'Potential Net Abstraction SW — Potential net abstraction from surface water',
+                get_neighbouring_cells_map: 'Neighbouring Cells Map — Map of neighbouring cell water supply network',
+                net_cell_runoff: 'Net Cell Runoff — Precipitation minus ET minus storage change [kg m⁻² s⁻¹]',
+                river_velocity: 'River Velocity — Flow velocity in rivers [m s⁻¹]',
+                land_area_fraction: 'Land Area Fraction — Fraction of grid cell that is land [–]',
+                // LB Storages
+                groundwater_storage: 'Groundwater Storage — Daily mean water in groundwater compartment [kg m⁻²]',
+                local_lake_storage: 'Local Lake Storage — Water stored in local lakes [kg m⁻²]',
+                local_wetland_storage: 'Local Wetland Storage — Water stored in local wetlands [kg m⁻²]',
+                global_lake_storage: 'Global Lake Storage — Water stored in global lakes [kg m⁻²]',
+                global_wetland_storage: 'Global Wetland Storage — Water stored in global wetlands [kg m⁻²]',
+                river_storage: 'River Storage — Daily mean water in river compartment [kg m⁻²]',
+                global_reservoir_storage: 'Reservoir Storage — Water in man-made reservoirs and regulated lakes [kg m⁻²]',
+                total_water_storage: 'Total Water Storage — Sum of all storage compartments (canopy + snow + soil + GW + rivers + lakes + wetlands + reservoirs) [kg m⁻²]',
+            },
+
             // Input data state
             inputData: {
                 datasets: [],
@@ -747,6 +894,10 @@
 
             getSelectedDataset() {
                 return this.inputData.datasets.find(d => d.id === this.inputData.selectedDataset);
+            },
+
+            toggleHelp(key) {
+                this.openHelp = this.openHelp === key ? '' : key;
             },
 
             toggleCategory(cat) {
