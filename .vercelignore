@@ -1,0 +1,36 @@
+# Python files — WaterGAP runs on Hetzner, not Vercel
+requirements.txt
+*.py
+__pycache__/
+*.pyc
+
+# Backend & model directories
+model/
+controller/
+view/
+calibration/
+jobs/
+uploads/
+test/
+misc/
+
+# Data directories
+input_data/
+output_data/
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Docs (built via GitHub Actions, not Vercel)
+docs/
+
+# Other non-frontend files
+run_watergap.py
+run_web.py
+run_calibration.py
+run_test.py
+cf_conv.json
+Config_ReWaterGAP.json
+watergap_logger.py
+__init__.py
