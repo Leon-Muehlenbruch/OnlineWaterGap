@@ -449,6 +449,8 @@
 <dt class="sig sig-object py" id="cli_args.parse_cli">
 <span class="sig-prename descclassname"><span class="pre">cli_args.</span></span><span class="sig-name descname"><span class="pre">parse_cli</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cli_args.html#parse_cli"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cli_args.parse_cli" title="Link to this definition">#</a></dt>
 <dd><p>Parse command line arguments.</p>
+<p>In web mode (WATERGAP_CONFIG env var set), argparse is skipped
+and a compatible namespace object is returned instead.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
