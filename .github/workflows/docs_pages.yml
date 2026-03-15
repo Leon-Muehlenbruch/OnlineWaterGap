@@ -6,11 +6,14 @@ on:
       - WaterGAP-2.2e
       - WaterGAP-2.3
 
+permissions:
+  contents: write
+
 jobs:
 
   build_docs_job:
     name: Build docs
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code  
         uses: actions/checkout@v3
