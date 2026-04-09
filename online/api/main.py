@@ -402,6 +402,58 @@ def list_input_datasets():
     return {"datasets": datasets, "custom_upload_enabled": True}
 
 
+@app.get("/api/input-datasets/time-range")
+def get_time_range(dataset_id: str = Query("gswp3-w5e5")):
+    """Scan NetCDF files in each input category and return the available
+    time range (min/max dates).  The *valid* simulation period is the
+    intersection of climate forcing and water use ranges.
+
+    Returns per-category ranges and the overall valid range.
+    """
+    categories = {
+        "climate_forcing": BASE_DIR / "input_data" / "climate_forcing",
+        "water_use":       BASE_DIR / "input_data" / "water_use",
+    }
+
+    ranges = {}
+    for cat_key, cat_path in categories.items():
+        if not cat_path.exists():
+            continue
+        cat_min, cat_max = None, None
+        for nc in sorted(cat_path.rglob("*.nc")):
+            try:
+                with xr.open_dataset(nc) as ds:
+                    if "time" not in ds.coords:
+                        continue
+                    times = ds.time.values
+                    t_min = str(np.datetime_as_string(times.min(), unit="D"))
+                    t_max = str(np.datetime_as_string(times.max(), unit="D"))
+                    if cat_min is None or t_min < cat_min:
+                        cat_min = t_min
+                    if cat_max is None or t_max > cat_max:
+                        cat_max = t_max
+            except Exception:
+                continue
+        if cat_min and cat_max:
+            ranges[cat_key] = {"min": cat_min, "max": cat_max}
+
+    # The valid simulation period is the intersection of all categories
+    if ranges:
+        overall_min = max(r["min"] for r in ranges.values())
+        overall_max = min(r["max"] for r in ranges.values())
+    else:
+        overall_min, overall_max = None, None
+
+    return {
+        "dataset_id": dataset_id,
+        "categories": ranges,
+        "valid_range": {
+            "min": overall_min,
+            "max": overall_max,
+        } if overall_min and overall_max and overall_min <= overall_max else None,
+    }
+
+
 @app.post("/api/simulate")
 def start_simulation(config: SimulationConfig):
     """Start a new simulation. Only one at a time."""

@@ -312,6 +312,47 @@
                             <strong>Reservoir Start/End Year</strong> — Only relevant when Reservoir Operation is enabled. Defines the time window during which man-made reservoirs become operational according to their commissioning year. Reservoirs built outside this window are treated as natural lakes.
                         </div>
                         <p class="text-xs text-gray-400 mb-4" x-show="openHelp !== 'period'">Define the time range, spin-up, and reservoir operation period.</p>
+
+                        <!-- Valid time range info (from input data) -->
+                        <div x-show="timeRange.loading" class="mb-4 flex items-center gap-2 text-sm text-gray-500">
+                            <div class="animate-spin w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                            Scanning input data for valid time range...
+                        </div>
+                        <div x-show="timeRange.valid && !timeRange.loading" x-cloak
+                             class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-start gap-2">
+                                <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div class="text-sm">
+                                    <p class="font-medium text-blue-800">Valid simulation period based on input data:</p>
+                                    <p class="text-blue-700 mt-1">
+                                        <span class="font-mono font-medium" x-text="timeRange.valid.min"></span>
+                                        &nbsp;to&nbsp;
+                                        <span class="font-mono font-medium" x-text="timeRange.valid.max"></span>
+                                    </p>
+                                    <template x-if="timeRange.categories">
+                                        <div class="mt-2 space-y-0.5 text-xs text-blue-600">
+                                            <template x-for="[cat, r] in Object.entries(timeRange.categories)" :key="cat">
+                                                <p>
+                                                    <span class="capitalize" x-text="cat.replace('_', ' ')"></span>:
+                                                    <span class="font-mono" x-text="r.min + ' \u2014 ' + r.max"></span>
+                                                </p>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <button type="button" @click="applyTimeRange()"
+                                            class="mt-2 px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                        Apply to dates
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div x-show="timeRange.error && !timeRange.loading" x-cloak
+                             class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+                            <span x-text="timeRange.error"></span>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
@@ -390,6 +431,41 @@
                                 </div>
                             </details>
                         </template>
+                    </div>
+
+                    <!-- Import / Export Config -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h2 class="text-lg font-semibold text-gray-800">Configuration File</h2>
+                            <button type="button" class="info-btn" @click="toggleHelp('configfile')" title="What is this?">i</button>
+                        </div>
+                        <div x-show="openHelp === 'configfile'" x-cloak class="info-box mb-4">
+                            <strong>Export</strong> — Download the current settings as a <code>Config_ReWaterGAP.json</code> file.
+                            This is the same format used by the command-line version of WaterGAP.<br>
+                            <strong>Import</strong> — Load an existing <code>Config_ReWaterGAP.json</code> file to populate all fields on this page.
+                            Useful for reproducing a previous simulation.
+                        </div>
+                        <p class="text-xs text-gray-400 mb-4" x-show="openHelp !== 'configfile'">Export or import a Config_ReWaterGAP.json file.</p>
+                        <div class="flex items-center gap-3">
+                            <button type="button" @click="exportConfig()"
+                                    class="px-4 py-2 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                Export Config
+                            </button>
+                            <button type="button" @click="$refs.configInput.click()"
+                                    class="px-4 py-2 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                                Import Config
+                            </button>
+                            <input type="file" x-ref="configInput" accept=".json" class="hidden" @change="importConfig($event)">
+                            <span x-show="configImportMsg" x-cloak x-text="configImportMsg"
+                                  class="text-sm"
+                                  :class="configImportError ? 'text-red-600' : 'text-green-600'"></span>
+                        </div>
                     </div>
 
                     <!-- Submit -->
@@ -736,6 +812,18 @@
                 loading: false,
             },
 
+            // Time range state (from scanning input data)
+            timeRange: {
+                valid: null,     // { min: '1901-01-01', max: '2019-12-31' }
+                categories: null,
+                loading: false,
+                error: '',
+            },
+
+            // Config import/export state
+            configImportMsg: '',
+            configImportError: false,
+
             // Config state (flat, converted to nested JSON on submit)
             config: {
                 ant: true,
@@ -795,6 +883,12 @@
                 }
                 if (!this.config.start || !this.config.end) return 'Start and end dates must be set.';
                 if (this.config.start >= this.config.end) return 'Start date must be before end date.';
+                if (this.timeRange.valid) {
+                    if (this.config.start < this.timeRange.valid.min)
+                        return `Start date is before available input data (${this.timeRange.valid.min}).`;
+                    if (this.config.end > this.timeRange.valid.max)
+                        return `End date is after available input data (${this.timeRange.valid.max}).`;
+                }
                 return '';
             },
 
@@ -831,10 +925,17 @@
                     // Auto-select first dataset if available
                     if (this.inputData.datasets.length > 0) {
                         this.inputData.selectedDataset = this.inputData.datasets[0].id;
+                        this.fetchTimeRange(this.inputData.datasets[0].id);
                     }
                 } catch (e) {
                     console.warn('Could not load presets/datasets:', e);
                 }
+
+                // Watch for dataset changes to re-fetch time range
+                this.$watch('inputData.selectedDataset', (val) => {
+                    if (val) this.fetchTimeRange(val);
+                    else { this.timeRange.valid = null; this.timeRange.categories = null; this.timeRange.error = ''; }
+                });
             },
 
             // --- Simulation page methods ---
@@ -902,6 +1003,121 @@
 
             toggleCategory(cat) {
                 this.inputData.expandedCategory = this.inputData.expandedCategory === cat ? null : cat;
+            },
+
+            async fetchTimeRange(datasetId) {
+                this.timeRange.loading = true;
+                this.timeRange.valid = null;
+                this.timeRange.categories = null;
+                this.timeRange.error = '';
+                try {
+                    const res = await fetch(API_BASE + `/api/input-datasets/time-range?dataset_id=${encodeURIComponent(datasetId)}`);
+                    const data = await res.json();
+                    if (data.valid_range) {
+                        this.timeRange.valid = data.valid_range;
+                        this.timeRange.categories = data.categories || null;
+                    } else {
+                        this.timeRange.error = 'Could not determine a valid overlapping time range from the input data. Categories may not overlap or contain no temporal data.';
+                    }
+                } catch (e) {
+                    this.timeRange.error = 'Could not scan input data: ' + e.message;
+                } finally {
+                    this.timeRange.loading = false;
+                }
+            },
+
+            applyTimeRange() {
+                if (!this.timeRange.valid) return;
+                this.config.start = this.timeRange.valid.min;
+                this.config.end = this.timeRange.valid.max;
+            },
+
+            exportConfig() {
+                const payload = this.buildPayload();
+                const watergapConfig = {
+                    FilePath: payload.file_path_config || {
+                        inputDir: { climate_forcing: 'input_data/climate_forcing/', water_use_data: 'input_data/water_use/', static_land_data: 'input_data/static_input/', parameter_path: 'model/WaterGAP_2.2e_global_parameters_gswp3_w5e5.nc' },
+                        outputDir: 'output_data/',
+                    },
+                    RuntimeOptions: [
+                        { SimulationOption: payload.simulation_option },
+                        { RestartOptions: { restart: false, save_model_states_for_restart: false, save_and_read_states_dir: './' } },
+                        { SimulationPeriod: payload.simulation_period },
+                        { TimeStep: { daily: true } },
+                        { SimulationExtent: { run_basin: false, path_to_stations_file: 'input_data/static_input/' } },
+                        { 'Calibrate WaterGAP': { run_calib: false, path_to_observed_discharge: '../test_wateruse/json_annual/' } },
+                    ],
+                    OutputVariable: [
+                        { VerticalWaterBalanceFluxes: payload.vb_fluxes },
+                        { VerticalWaterBalanceStorages: payload.vb_storages },
+                        { LateralWaterBalanceFluxes: payload.lb_fluxes },
+                        { LateralWaterBalanceStorages: payload.lb_storages },
+                    ],
+                };
+                const blob = new Blob([JSON.stringify(watergapConfig, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Config_ReWaterGAP.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+
+            importConfig(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                this.configImportMsg = '';
+                this.configImportError = false;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const cfg = JSON.parse(e.target.result);
+
+                        // Parse RuntimeOptions
+                        const opts = cfg.RuntimeOptions?.[0]?.SimulationOption;
+                        if (opts) {
+                            this.config.ant = opts.AntNat_opts?.ant ?? this.config.ant;
+                            this.config.subtract_use = opts.AntNat_opts?.subtract_use ?? this.config.subtract_use;
+                            this.config.res_opt = opts.AntNat_opts?.res_opt ?? this.config.res_opt;
+                            this.config.delayed_use = opts.Demand_satisfaction_opts?.delayed_use ?? this.config.delayed_use;
+                            this.config.neighbouring_cell = opts.Demand_satisfaction_opts?.neighbouring_cell ?? this.config.neighbouring_cell;
+                        }
+
+                        const period = cfg.RuntimeOptions?.[2]?.SimulationPeriod;
+                        if (period) {
+                            this.config.start = period.start || this.config.start;
+                            this.config.end = period.end || this.config.end;
+                            this.config.spinup_years = period.spinup_years ?? this.config.spinup_years;
+                            this.config.reservoir_start_year = period.reservoir_start_year ?? this.config.reservoir_start_year;
+                            this.config.reservoir_end_year = period.reservoir_end_year ?? this.config.reservoir_end_year;
+                        }
+
+                        // Parse Output Variables
+                        const ovGroups = [
+                            [cfg.OutputVariable?.[0]?.VerticalWaterBalanceFluxes, 'vb_fluxes'],
+                            [cfg.OutputVariable?.[1]?.VerticalWaterBalanceStorages, 'vb_storages'],
+                            [cfg.OutputVariable?.[2]?.LateralWaterBalanceFluxes, 'lb_fluxes'],
+                            [cfg.OutputVariable?.[3]?.LateralWaterBalanceStorages, 'lb_storages'],
+                        ];
+                        for (const [src, key] of ovGroups) {
+                            if (src) {
+                                for (const [k, v] of Object.entries(src)) {
+                                    if (k in this.config[key]) this.config[key][k] = v;
+                                }
+                            }
+                        }
+
+                        this.configImportMsg = 'Config loaded successfully!';
+                        this.configImportError = false;
+                        setTimeout(() => { this.configImportMsg = ''; }, 3000);
+                    } catch (err) {
+                        this.configImportMsg = 'Invalid JSON file: ' + err.message;
+                        this.configImportError = true;
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
             },
 
             buildPayload() {
