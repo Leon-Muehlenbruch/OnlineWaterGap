@@ -427,12 +427,40 @@ def get_time_range(dataset_id: str = Query("gswp3-w5e5")):
         cat_min, cat_max = None, None
         for nc in sorted(list(cat_path.rglob("*.nc")) + list(cat_path.rglob("*.nc4"))):
             try:
-                with xr.open_dataset(nc) as ds:
+                # Try standard decoding first, fall back to decode_times=False
+                # for non-standard calendars (e.g. 365_day with 'months since')
+                try:
+                    ds = xr.open_dataset(nc)
+                except ValueError:
+                    ds = xr.open_dataset(nc, decode_times=False)
+                with ds:
                     if "time" not in ds.coords:
                         continue
                     times = ds.time.values
-                    t_min = str(np.datetime_as_string(times.min(), unit="D"))
-                    t_max = str(np.datetime_as_string(times.max(), unit="D"))
+                    # If times were decoded to datetime64, use np.datetime_as_string
+                    if hasattr(times.dtype, 'str') and 'datetime64' in str(times.dtype):
+                        t_min = str(np.datetime_as_string(times.min(), unit="D"))
+                        t_max = str(np.datetime_as_string(times.max(), unit="D"))
+                    else:
+                        # Raw numeric time — read units attr to determine range
+                        units = ds.time.attrs.get("units", "")
+                        # Parse 'months since YYYY-MM-DD' or 'days since YYYY-MM-DD'
+                        if "since" in units:
+                            base_str = units.split("since")[-1].strip().split(" ")[0]
+                            from dateutil.parser import parse as dtparse
+                            from dateutil.relativedelta import relativedelta
+                            base = dtparse(base_str)
+                            if "month" in units:
+                                d_min = base + relativedelta(months=int(float(times.min())))
+                                d_max = base + relativedelta(months=int(float(times.max())))
+                            else:
+                                from datetime import timedelta
+                                d_min = base + timedelta(days=float(times.min()))
+                                d_max = base + timedelta(days=float(times.max()))
+                            t_min = d_min.strftime("%Y-%m-%d")
+                            t_max = d_max.strftime("%Y-%m-%d")
+                        else:
+                            continue
                     if cat_min is None or t_min < cat_min:
                         cat_min = t_min
                     if cat_max is None or t_max > cat_max:
