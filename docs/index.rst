@@ -7,8 +7,8 @@ ReWaterGAP documentation
 **Date**: |today| **Version**: 2.2e
 
 **Useful links**:
-`Source Repository <https://github.com/HydrologyFrankfurt/ReWaterGAP>`__ |
-`Issues & Ideas <https://github.com/HydrologyFrankfurt/ReWaterGAP/issues>`__ |
+`Source Repository <https://github.com/Leon-Muehlenbruch/OnlineWaterGap>`__ |
+`Issues & Ideas <https://github.com/Leon-Muehlenbruch/OnlineWaterGap/issues>`__ |
 
 :mod:`ReWaterGAP` is an open source, GNU-GPL 3-licensed hydrological simulation software for quantifying water flows and storages on all continents of the Earth.
 
@@ -57,6 +57,16 @@ ReWaterGAP documentation
         Saw a typo in the documentation or want to improve functionalities? The contributing guidelines will guide
         you through the process of improving ReWaterGAP.
 
+    .. grid-item-card:: Online Infrastructure
+        :text-align: center
+        :link: online_infrastructure
+        :link-type: ref
+
+        :octicon:`globe;10em`
+        +++
+        Architecture and deployment documentation for the OnlineWaterGap web interface —
+        Vercel frontend, Hetzner Docker backend, and Supabase database.
+
     .. grid-item-card:: Glossary
         :text-align: center
         :link: glossary
@@ -73,5 +83,6 @@ ReWaterGAP documentation
     user_guide/index
     model_processes/index
     contributers_guide/index
+    online_infrastructure/index
     glossary/index
 

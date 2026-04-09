@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReWaterGAP Web</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .toggle-bg { transition: background-color 0.2s; }
+        .log-output { font-family: 'Courier New', monospace; font-size: 0.75rem; }
+        .drop-zone.dragover { border-color: #3b82f6; background-color: #eff6ff; }
+        /* Info tooltip styles */
+        .info-btn { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #e0e7ff; color: #4f46e5; font-size: 11px; font-weight: 700; cursor: pointer; border: none; line-height: 1; flex-shrink: 0; transition: background 0.15s; }
+        .info-btn:hover { background: #c7d2fe; }
+        .info-box { margin-top: 8px; padding: 10px 14px; background: #f0f4ff; border: 1px solid #c7d2fe; border-radius: 8px; font-size: 0.8rem; color: #374151; line-height: 1.5; }
+        .info-box strong { color: #1e3a5f; }
+        .info-box code { background: #e0e7ff; padding: 1px 5px; border-radius: 4px; font-size: 0.75rem; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen" x-data="app()" x-init="init()">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">ReWaterGAP</h1>
+                <p class="text-sm text-gray-500">Global Hydrological Simulation</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span x-show="currentJob && page === 'simulation'" x-cloak
+                      class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                      :class="statusBadgeClass">
+                    <span class="w-2 h-2 rounded-full" :class="statusDotClass"></span>
+                    <span x-text="statusLabel"></span>
+                </span>
+            </div>
+        </div>
+        <!-- Navigation tabs -->
+        <div class="max-w-5xl mx-auto px-6">
+            <nav class="flex gap-0 -mb-px">
+                <button @click="page = 'simulation'"
+                        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
+                        :class="page === 'simulation' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
+                    Simulation
+                </button>
+                <button @click="page = 'visualization'; initVisualizationPage()"
+                        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
+                        :class="page === 'visualization' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
+                    Visualization
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 py-8">
+
+        <!-- ################################################################ -->
+        <!-- PAGE: Simulation                                                 -->
+        <!-- ################################################################ -->
+        <div x-show="page === 'simulation'" x-cloak>
+
+            <!-- ==================== VIEW: Configure ==================== -->
+            <div x-show="view === 'configure'" x-cloak>
+
+                <!-- Preset selector -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Load Preset</label>
+                    <div class="flex gap-2">
+                        <select x-model="selectedPreset" @change="loadPreset()"
+                                class="flex-1 rounded-lg border-gray-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">— Select preset —</option>
+                            <template x-for="p in presets" :key="p.id">
+                                <option :value="p.id" x-text="p.name"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Config Form -->
+                <form @submit.prevent="startSimulation()" class="space-y-6">
+
+                    <!-- Section: Input Data -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h2 class="text-lg font-semibold text-gray-800">Input Data</h2>
+                            <button type="button" class="info-btn" @click="toggleHelp('inputdata')" title="What is this?">i</button>
+                        </div>
+                        <div x-show="openHelp === 'inputdata'" x-cloak class="info-box mb-4">
+                            WaterGAP requires three categories of input data:<br>
+                            <strong>Climate Forcing</strong> — Daily meteorological data: precipitation (pr), temperature (tas), downward longwave radiation (rlds), and downward shortwave radiation (rsds). Available from <a href="https://data.isimip.org/search/tree/ISIMIP3a/InputData/climate/atmosphere/" target="_blank" class="text-blue-600 underline">ISIMIP</a>. Data is organized in 10-year files. Leap days must be removed.<br>
+                            <strong>Water Use</strong> — Monthly sectoral water withdrawal and consumption data (irrigation surface water, irrigation water withdrawal, net abstractions from surface water and groundwater). Must match the chosen climate forcing dataset.<br>
+                            <strong>Static Land Data</strong> — Time-invariant parameters: land cover, soil properties, river routing tables, reservoir locations, continental area fractions, and calibration parameters.<br>
+                            <em>Important:</em> The parameter file must be calibrated for the same climate forcing dataset used in the simulation.
+                        </div>
+                        <p class="text-sm text-gray-500 mb-4" x-show="openHelp !== 'inputdata'">Select the dataset bundle for your simulation</p>
+
+                        <!-- Dataset dropdown -->
+                        <div class="mb-4">
+                            <select x-model="inputData.selectedDataset"
+                                    class="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">— Select dataset —</option>
+                                <template x-for="ds in inputData.datasets" :key="ds.id">
+                                    <option :value="ds.id" x-text="ds.name"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <!-- Dataset info (when selected) -->
+                        <template x-if="getSelectedDataset()">
+                            <div>
+                                <div class="flex items-center gap-2 mb-3">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                                          :class="getSelectedDataset().complete ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'">
+                                        <span x-text="getSelectedDataset().complete ? 'Complete' : 'Partial'"></span>
+                                    </span>
+                                    <span class="text-xs text-gray-400" x-text="getSelectedDataset().total_size_mb + ' MB total'"></span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-4" x-text="getSelectedDataset().description"></p>
+
+                                <!-- Category cards -->
+                                <div class="space-y-2">
+                                    <template x-for="[catKey, cat] in Object.entries(getSelectedDataset().categories)" :key="catKey">
+                                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                            <!-- Category header (clickable) -->
+                                            <button type="button" @click="toggleCategory(catKey)"
+                                                    class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-left">
+                                                <div class="flex items-center gap-3">
+                                                    <!-- Checkmark or warning -->
+                                                    <span x-show="cat.available" class="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+                                                        <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                    </span>
+                                                    <span x-show="!cat.available" class="flex-shrink-0 w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
+                                                        <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    </span>
+                                                    <div>
+                                                        <span class="text-sm font-medium text-gray-700" x-text="cat.label"></span>
+                                                        <span class="text-xs text-gray-400 ml-2" x-text="cat.files.length + ' files'"></span>
+                                                    </div>
+                                                </div>
+                                                <!-- Expand chevron -->
+                                                <svg class="w-4 h-4 text-gray-400 transition-transform" :class="inputData.expandedCategory === catKey && 'rotate-180'"
+                                                     fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                            </button>
+                                            <!-- Expanded file list -->
+                                            <div x-show="inputData.expandedCategory === catKey" x-cloak
+                                                 class="border-t border-gray-100 bg-gray-50 px-4 py-2">
+                                                <p class="text-xs text-gray-500 mb-2" x-text="cat.description"></p>
+                                                <template x-if="cat.files.length > 0">
+                                                    <ul class="space-y-1">
+                                                        <template x-for="f in cat.files" :key="f.name">
+                                                            <li class="flex items-center justify-between text-xs py-1">
+                                                                <div class="flex items-center gap-2">
+                                                                    <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                                    <span class="text-gray-700 font-mono" x-text="f.name"></span>
+                                                                </div>
+                                                                <span class="text-gray-400" x-text="f.size_mb + ' MB'"></span>
+                                                            </li>
+                                                        </template>
+                                                    </ul>
+                                                </template>
+                                                <template x-if="cat.files.length === 0">
+                                                    <p class="text-xs text-red-500 italic">No files found — data not yet uploaded to server</p>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- No datasets message -->
+                        <div x-show="inputData.datasets.length === 0" class="text-center py-6">
+                            <p class="text-sm text-gray-500">No input datasets found on the server.</p>
+                            <p class="text-xs text-gray-400 mt-1">Upload data via SSH or contact the administrator.</p>
+                        </div>
+                    </div>
+
+                    <!-- Section: Simulation Mode -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h2 class="text-lg font-semibold text-gray-800">Simulation Mode</h2>
+                            <button type="button" class="info-btn" @click="toggleHelp('simmode')" title="What is this?">i</button>
+                        </div>
+                        <div x-show="openHelp === 'simmode'" x-cloak class="info-box mb-4">
+                            WaterGAP supports four simulation modes:<br>
+                            <strong>Naturalized Run</strong> — No human impacts. Disable Anthropogenic to compute natural flows and storages without human water use or reservoirs.<br>
+                            <strong>Standard Anthropogenic</strong> — Enable all options to simulate combined effects of human water use and man-made reservoirs on flows and storages.<br>
+                            <strong>Human Water Use Only</strong> — Enable Anthropogenic + Subtract Water Use, disable Reservoir Operation.<br>
+                            <strong>Reservoirs Only</strong> — Enable Anthropogenic + Reservoir Operation, disable Subtract Water Use.
+                        </div>
+                        <p class="text-xs text-gray-400 mb-4" x-show="openHelp !== 'simmode'">Click <span class="info-btn" style="display:inline;cursor:default;font-size:9px;width:14px;height:14px;">i</span> for details on each option.</p>
+
+                        <div class="space-y-3">
+                            <!-- Anthropogenic Run -->
+                            <div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-medium text-gray-700">Anthropogenic Run</span>
+                                        <button type="button" class="info-btn" @click="toggleHelp('ant')" title="Info">i</button>
+                                    </div>
+                                    <button type="button" @click="config.ant = !config.ant; onAntChanged()"
+                                            class="relative w-11 h-6 rounded-full transition-colors"
+                                            :class="config.ant ? 'bg-blue-600' : 'bg-gray-300'">
+                                        <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                              :class="config.ant ? 'translate-x-5' : ''"></span>
+                                    </button>
+                                </div>
+                                <div x-show="openHelp === 'ant'" x-cloak class="info-box">
+                                    When enabled, WaterGAP simulates <strong>human impacts</strong> on the water cycle. At least one of Subtract Water Use or Reservoir Operation must also be active. When disabled, a <strong>naturalized run</strong> is performed — computing flows and storages as they would occur without any human water use or man-made reservoirs.
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <!-- Subtract Water Use -->
+                                <div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-medium text-gray-700">Subtract Water Use</span>
+                                            <button type="button" class="info-btn" @click="toggleHelp('subtract')" title="Info">i</button>
+                                        </div>
+                                        <button type="button" @click="config.subtract_use = !config.subtract_use"
+                                                :disabled="!config.ant"
+                                                class="relative w-11 h-6 rounded-full transition-colors"
+                                                :class="config.subtract_use ? 'bg-blue-600' : 'bg-gray-300'">
+                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                                  :class="config.subtract_use ? 'translate-x-5' : ''"></span>
+                                        </button>
+                                    </div>
+                                    <div x-show="openHelp === 'subtract'" x-cloak class="info-box">
+                                        Subtracts sectoral water consumption (irrigation, domestic, manufacturing, thermal power, livestock) from surface water and groundwater resources. This directly reduces river discharge, lake levels, and groundwater storage based on actual water demand.
+                                    </div>
+                                </div>
+
+                                <!-- Reservoir Operation -->
+                                <div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-medium text-gray-700">Reservoir Operation</span>
+                                            <button type="button" class="info-btn" @click="toggleHelp('resopt')" title="Info">i</button>
+                                        </div>
+                                        <button type="button" @click="config.res_opt = !config.res_opt"
+                                                :disabled="!config.ant"
+                                                class="relative w-11 h-6 rounded-full transition-colors"
+                                                :class="config.res_opt ? 'bg-blue-600' : 'bg-gray-300'">
+                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                                  :class="config.res_opt ? 'translate-x-5' : ''"></span>
+                                        </button>
+                                    </div>
+                                    <div x-show="openHelp === 'resopt'" x-cloak class="info-box">
+                                        Includes the effects of <strong>man-made reservoirs and regulated lakes</strong> on river flow. Reservoirs alter the natural flow regime by storing water and releasing it according to operational rules. Their commissioning years determine when each reservoir becomes active during the simulation.
+                                    </div>
+                                </div>
+
+                                <!-- Delayed Use -->
+                                <div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-medium text-gray-700">Delayed Use</span>
+                                            <button type="button" class="info-btn" @click="toggleHelp('delayed')" title="Info">i</button>
+                                        </div>
+                                        <button type="button" @click="config.delayed_use = !config.delayed_use"
+                                                :disabled="!config.ant"
+                                                class="relative w-11 h-6 rounded-full transition-colors"
+                                                :class="config.delayed_use ? 'bg-blue-600' : 'bg-gray-300'">
+                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                                  :class="config.delayed_use ? 'translate-x-5' : ''"></span>
+                                        </button>
+                                    </div>
+                                    <div x-show="openHelp === 'delayed'" x-cloak class="info-box">
+                                        <strong>Temporal demand satisfaction:</strong> If surface water demand cannot be fully met on the current day, the unsatisfied portion is carried over to the next day. This allows WaterGAP to satisfy water demand across time steps rather than losing unmet demand immediately.
+                                    </div>
+                                </div>
+
+                                <!-- Neighbouring Cell -->
+                                <div>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-medium text-gray-700">Neighbouring Cell Supply</span>
+                                            <button type="button" class="info-btn" @click="toggleHelp('neighbour')" title="Info">i</button>
+                                        </div>
+                                        <button type="button" @click="config.neighbouring_cell = !config.neighbouring_cell"
+                                                :disabled="!config.ant"
+                                                class="relative w-11 h-6 rounded-full transition-colors"
+                                                :class="config.neighbouring_cell ? 'bg-blue-600' : 'bg-gray-300'">
+                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                                  :class="config.neighbouring_cell ? 'translate-x-5' : ''"></span>
+                                        </button>
+                                    </div>
+                                    <div x-show="openHelp === 'neighbour'" x-cloak class="info-box">
+                                        <strong>Spatial demand satisfaction:</strong> If a grid cell's own surface water resources are insufficient, water can be supplied from neighbouring grid cells. Together with the riparian supply option (always enabled by default), this allows WaterGAP to redistribute water demand spatially across the river network.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div x-show="config.ant && !config.subtract_use && !config.res_opt" x-cloak
+                             class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                            Anthropogenic run requires at least Subtract Water Use or Reservoir Operation to be enabled.
+                        </div>
+                    </div>
+
+                    <!-- Section: Simulation Period -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h2 class="text-lg font-semibold text-gray-800">Simulation Period</h2>
+                            <button type="button" class="info-btn" @click="toggleHelp('period')" title="What is this?">i</button>
+                        </div>
+                        <div x-show="openHelp === 'period'" x-cloak class="info-box mb-4">
+                            <strong>Start/End Date</strong> — Define the time range for the simulation. Climate forcing data must cover this period (plus spin-up). WaterGAP runs at daily resolution.<br>
+                            <strong>Spin-up Years</strong> — Number of years to repeat the first year of forcing data before the actual simulation begins. This initializes model storages (soil moisture, groundwater, snow, etc.) to realistic levels. Typical value: 5 years.<br>
+                            <strong>Reservoir Start/End Year</strong> — Only relevant when Reservoir Operation is enabled. Defines the time window during which man-made reservoirs become operational according to their commissioning year. Reservoirs built outside this window are treated as natural lakes.
+                        </div>
+                        <p class="text-xs text-gray-400 mb-4" x-show="openHelp !== 'period'">Define the time range, spin-up, and reservoir operation period.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                <input type="date" x-model="config.start"
+                                       class="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                <input type="date" x-model="config.end"
+                                       class="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Spin-up Years</label>
+                                <input type="number" x-model.number="config.spinup_years" min="0" max="30"
+                                       class="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div x-show="config.res_opt" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reservoir Start Year</label>
+                                <input type="number" x-model.number="config.reservoir_start_year" min="1900" max="2025"
+                                       class="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reservoir End Year</label>
+                                <input type="number" x-model.number="config.reservoir_end_year" min="1900" max="2025"
+                                       class="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Output Variables -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-lg font-semibold text-gray-800">Output Variables</h2>
+                                <button type="button" class="info-btn" @click="toggleHelp('outvars')" title="What is this?">i</button>
+                            </div>
+                            <button type="button" @click="toggleAllOutputVars()"
+                                    class="px-4 py-1.5 text-sm font-medium rounded-lg border transition-colors"
+                                    :class="allOutputVarsOn() ? 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100' : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100'">
+                                Toggle All
+                            </button>
+                        </div>
+                        <div x-show="openHelp === 'outvars'" x-cloak class="info-box mb-4">
+                            Select which variables WaterGAP writes to NetCDF output files. Variables are grouped into four categories:<br>
+                            <strong>Vertical Water Balance — Fluxes:</strong> Water flows within each grid cell (evaporation, precipitation throughfall, snowmelt, surface runoff, groundwater recharge).<br>
+                            <strong>Vertical Water Balance — Storages:</strong> Water stored in vertical compartments (canopy, snow, soil).<br>
+                            <strong>Lateral Water Balance — Fluxes:</strong> Water flows between grid cells and water bodies (river discharge, lake/wetland outflows, groundwater discharge, water abstractions).<br>
+                            <strong>Lateral Water Balance — Storages:</strong> Water stored in rivers, lakes, wetlands, groundwater, and reservoirs.<br>
+                            <em>Enabling more variables increases output file size and computation time slightly.</em>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-3" x-show="openHelp !== 'outvars'">Toggle output variables per category. Hover over variable names for descriptions.</p>
+
+                        <template x-for="[groupKey, groupLabel] in [['vb_fluxes','Vertical Water Balance — Fluxes'],['vb_storages','Vertical Water Balance — Storages'],['lb_fluxes','Lateral Water Balance — Fluxes'],['lb_storages','Lateral Water Balance — Storages']]" :key="groupKey">
+                            <details class="mb-3" open>
+                                <summary class="cursor-pointer text-sm font-medium text-gray-700 py-2 px-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+                                    <span x-text="groupLabel"></span>
+                                    <span class="text-xs text-gray-400 ml-2" x-text="countTrue(config[groupKey]) + '/' + Object.keys(config[groupKey]).length + ' selected'"></span>
+                                </summary>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 pl-1">
+                                    <template x-for="key in Object.keys(config[groupKey])" :key="key">
+                                        <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50" :title="varDescriptions[key] || ''">
+                                            <div>
+                                                <span class="text-sm text-gray-600" x-text="varDescriptions[key] ? varDescriptions[key].split(' — ')[0] : key.replace(/_/g, ' ')"></span>
+                                                <p class="text-xs text-gray-400" x-show="varDescriptions[key] && varDescriptions[key].includes(' — ')" x-text="varDescriptions[key] ? varDescriptions[key].split(' — ')[1] : ''"></p>
+                                            </div>
+                                            <button type="button" @click="config[groupKey][key] = !config[groupKey][key]"
+                                                    class="relative w-9 h-5 rounded-full transition-colors flex-shrink-0"
+                                                    :class="config[groupKey][key] ? 'bg-blue-600' : 'bg-gray-300'">
+                                                <span class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
+                                                      :class="config[groupKey][key] ? 'translate-x-4' : ''"></span>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </details>
+                        </template>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-red-600" x-show="validationError" x-text="validationError"></p>
+                        <button type="submit"
+                                :disabled="!!validationError"
+                                class="ml-auto px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            Start Simulation
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ==================== VIEW: Running ==================== -->
+            <div x-show="view === 'running'" x-cloak>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Simulation Running</h2>
+                        <button @click="cancelSimulation()"
+                                class="px-4 py-2 text-sm text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full"
+                                 x-show="jobStatus === 'running'"></div>
+                            <span class="text-sm font-medium" :class="{
+                                'text-blue-600': jobStatus === 'running',
+                                'text-green-600': jobStatus === 'completed',
+                                'text-red-600': jobStatus === 'failed'
+                            }" x-text="jobStatus === 'running' ? 'Computing...' : jobStatus === 'completed' ? 'Completed!' : 'Error'"></span>
+                        </div>
+                        <p class="text-xs text-gray-500">Job: <span x-text="currentJob"></span></p>
+                    </div>
+
+                    <!-- Log output -->
+                    <div class="bg-gray-900 rounded-lg p-4 max-h-96 overflow-y-auto">
+                        <pre class="log-output text-green-400 whitespace-pre-wrap" x-text="logOutput || 'Waiting for output...'"></pre>
+                    </div>
+
+                    <!-- Result buttons -->
+                    <div x-show="jobStatus === 'completed'" x-cloak class="mt-4 flex gap-3">
+                        <button @click="viewJobResults(currentJob)"
+                                class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                            View Results
+                        </button>
+                        <a :href="API_BASE + '/api/result/' + currentJob"
+                           class="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors inline-flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Download ZIP
+                        </a>
+                        <button @click="view = 'configure'; currentJob = null"
+                                class="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                            New Simulation
+                        </button>
+                    </div>
+
+                    <div x-show="jobStatus === 'failed'" x-cloak class="mt-4">
+                        <button @click="view = 'configure'; currentJob = null"
+                                class="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                            Back to Configuration
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end page=simulation -->
+
+
+        <!-- ################################################################ -->
+        <!-- PAGE: Visualization                                              -->
+        <!-- ################################################################ -->
+        <div x-show="page === 'visualization'" x-cloak>
+
+            <!-- Source bar: dropdown + upload button -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+                <div class="flex flex-wrap items-end gap-3">
+                    <!-- Source dropdown -->
+                    <div class="flex-1 min-w-[250px]">
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Data Source</label>
+                        <select x-model="viz.sourceId" @change="onSourceChanged()"
+                                class="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                            <option value="">— Select a data source —</option>
+                            <optgroup label="Simulation Runs" x-show="viz.jobs.length > 0">
+                                <template x-for="j in viz.jobs" :key="j.job_id">
+                                    <option :value="j.job_id" x-text="j.period ? ('Run: ' + j.period) : ('Run: ' + j.job_id)"></option>
+                                </template>
+                            </optgroup>
+                            <optgroup label="Uploaded Files" x-show="viz.uploads.length > 0">
+                                <template x-for="u in viz.uploads" :key="u.upload_id">
+                                    <option :value="u.upload_id" x-text="'Upload: ' + u.filename"></option>
+                                </template>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- Upload button -->
+                    <div class="flex items-center gap-2">
+                        <button @click="$refs.fileInput.click()"
+                                class="px-4 py-2 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            Upload .nc
+                        </button>
+                        <input type="file" x-ref="fileInput" accept=".nc" class="hidden" @change="handleFileSelect($event)">
+
+                        <!-- Delete upload button (only for uploads) -->
+                        <button x-show="viz.sourceId && !viz.isJob" x-cloak
+                                @click="deleteCurrentUpload()"
+                                class="px-3 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                                title="Delete upload">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+
+                        <!-- Download ZIP button (only for jobs) -->
+                        <a x-show="viz.sourceId && viz.isJob" x-cloak
+                           :href="API_BASE + '/api/result/' + viz.sourceId"
+                           class="px-3 py-2 text-sm text-green-700 border border-green-300 rounded-lg hover:bg-green-50 transition-colors inline-flex items-center gap-1"
+                           title="Download all results as ZIP">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            ZIP
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Upload progress / error -->
+                <div x-show="viz.uploading" x-cloak class="mt-3 flex items-center gap-3">
+                    <div class="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                    <span class="text-sm text-gray-600">Uploading...</span>
+                </div>
+                <div x-show="viz.uploadError" x-cloak class="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700" x-text="viz.uploadError"></div>
+            </div>
+
+            <!-- Empty state (no source selected) -->
+            <div x-show="!viz.sourceId" class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+                <div class="drop-zone rounded-xl p-8 border-2 border-dashed border-gray-200 max-w-lg mx-auto cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-colors"
+                     @click="$refs.fileInput.click()"
+                     @dragover.prevent="$event.currentTarget.classList.add('dragover')"
+                     @dragleave.prevent="$event.currentTarget.classList.remove('dragover')"
+                     @drop.prevent="handleFileDrop($event)">
+                    <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                    <p class="text-gray-500 font-medium mb-1">Select a data source above or drop a .nc file here</p>
+                    <p class="text-xs text-gray-400">Choose from previous simulation runs, uploads, or upload a new NetCDF file</p>
+                </div>
+            </div>
+
+            <!-- Viewer (when a source is selected) -->
+            <div x-show="viz.sourceId" x-cloak>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+
+                    <!-- Controls bar -->
+                    <div class="flex flex-wrap items-center gap-4 mb-4">
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Variable</label>
+                            <select x-model="viewer.selectedVar" @change="onVarChanged()"
+                                    class="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                                <template x-for="[key, info] in Object.entries(viewer.variables)" :key="key">
+                                    <option :value="key" x-text="info.label + (info.unit ? ' [' + info.unit + ']' : '')"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <div class="flex-1 min-w-[200px]" x-show="!isStaticVar()">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">
+                                Date
+                                <span class="text-gray-400" x-text="'(' + (viewer.timeIndex + 1) + ' / ' + currentTimeSteps().length + ')'"></span>
+                            </label>
+                            <select x-model="viewer.selectedTime" @change="loadMap()"
+                                    class="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                                <template x-for="(t, i) in currentTimeSteps()" :key="t">
+                                    <option :value="t" x-text="t"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <div class="flex items-end gap-1" x-show="!isStaticVar()">
+                            <button @click="stepTime(-1)" :disabled="viewer.timeIndex <= 0"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+                                &#9664;
+                            </button>
+                            <button @click="togglePlay()"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+                                    :class="viewer.playing && 'bg-blue-50 border-blue-400'">
+                                <span x-text="viewer.playing ? '&#9724;' : '&#9654;'"></span>
+                            </button>
+                            <button @click="stepTime(1)" :disabled="viewer.timeIndex >= currentTimeSteps().length - 1"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+                                &#9654;
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Time slider -->
+                    <div x-show="!isStaticVar() && currentTimeSteps().length > 1" class="mb-4">
+                        <input type="range" min="0" :max="currentTimeSteps().length - 1"
+                               x-model.number="viewer.timeIndex"
+                               @input="viewer.selectedTime = currentTimeSteps()[viewer.timeIndex]; loadMap()"
+                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+
+                    <!-- Map image -->
+                    <div class="relative bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center" style="min-height: 400px;">
+                        <div x-show="viewer.loading" class="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
+                            <div class="flex items-center gap-3">
+                                <div class="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                                <span class="text-sm text-gray-600">Rendering map...</span>
+                            </div>
+                        </div>
+                        <img :src="viewer.mapUrl" x-show="viewer.mapUrl" @load="viewer.loading = false"
+                             class="max-w-full h-auto" style="max-height: 600px;"
+                             alt="Map">
+                        <p x-show="!viewer.mapUrl && !viewer.loading" class="text-gray-400 text-sm">Loading map...</p>
+                    </div>
+
+                    <!-- Bottom bar -->
+                    <div class="mt-4 flex items-center justify-end">
+                        <a :href="viewer.mapUrl" download x-show="viewer.mapUrl"
+                           class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Save Image
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end page=visualization -->
+
+    </main>
+
+    <script>
+    // If served from Vercel (or any non-API host), point to the Hetzner backend.
+    // If served directly from FastAPI, use relative paths.
+    // Vercel rewrites /api/* to Hetzner, so we always use relative paths.
+    // Only use direct Hetzner URL if running locally without proxy.
+    const API_BASE = '';
+
+    function app() {
+        return {
+            // Top-level navigation
+            page: 'simulation',
+
+            // Simulation page state
+            view: 'configure',
+            presets: [],
+            selectedPreset: '',
+            currentJob: null,
+            jobStatus: null,
+            logOutput: '',
+            pollInterval: null,
+
+            // Visualization page state
+            viz: {
+                sourceId: null,
+                isJob: false,
+                jobs: [],
+                uploads: [],
+                uploading: false,
+                uploadError: '',
+            },
+
+            // Shared viewer state
+            viewer: {
+                variables: {},
+                selectedVar: '',
+                selectedTime: '',
+                timeIndex: 0,
+                mapUrl: '',
+                loading: false,
+                playing: false,
+                playInterval: null,
+            },
+
+            // Help tooltip state (which info box is open)
+            openHelp: '',
+
+            // Variable descriptions from WaterGAP glossary (name — description [unit])
+            varDescriptions: {
+                // VB Fluxes
+                pot_evap: 'Potential Evapotranspiration — Potential evapotranspiration over land and surface water [kg m⁻² s⁻¹]',
+                net_rad: 'Net Radiation — Net upward plus net downward radiation [kg m⁻² s⁻¹]',
+                leaf_area_index: 'Leaf Area Index — Simulated leaf area index of vegetation [–]',
+                canopy_evap: 'Canopy Evaporation — Evaporation from canopy interception storage [kg m⁻² s⁻¹]',
+                throughfall: 'Throughfall — Fraction of precipitation reaching the soil [kg m⁻² s⁻¹]',
+                snow_fall: 'Snowfall — Throughfall when temperature is below 0°C [kg m⁻² s⁻¹]',
+                snow_melt: 'Snow Melt — Water released from snowpack melting [kg m⁻² s⁻¹]',
+                snow_evap: 'Snow Evaporation — Evaporation/sublimation from snow [kg m⁻² s⁻¹]',
+                groundwater_recharge_diffuse: 'Diffuse GW Recharge — Groundwater recharge from soil percolation [kg m⁻² s⁻¹]',
+                surface_runoff: 'Surface Runoff — Fast surface and subsurface runoff, does not recharge groundwater [kg m⁻² s⁻¹]',
+                snowcover_frac: 'Snowcover Fraction — Fraction of grid cell covered by snow [–]',
+                // VB Storages
+                canopy_storage: 'Canopy Storage — Daily mean water stored in canopy [kg m⁻²]',
+                snow_water_equiv: 'Snow Water Equivalent — Total water mass of the snowpack [kg m⁻²]',
+                soil_moisture: 'Soil Moisture — Daily mean water storage in soil compartment [kg m⁻²]',
+                maximum_soil_moisture: 'Max Soil Moisture — Maximum soil water holding capacity [kg m⁻²]',
+                // LB Fluxes
+                consistent_precipitation: 'Consistent Precipitation — Precipitation used in the WaterGAP model [kg m⁻² s⁻¹]',
+                groundwater_discharge: 'Groundwater Discharge — Outflow from groundwater to surface waterbodies and rivers [kg m⁻² s⁻¹]',
+                total_runoff: 'Total Runoff — Sum of surface runoff and groundwater discharge [kg m⁻² s⁻¹]',
+                pot_cell_runoff: 'Potential Cell Runoff — Potential runoff before water use abstractions [kg m⁻² s⁻¹]',
+                groundwater_recharge_swb: 'Focused GW Recharge — Localized recharge below surface waterbodies [kg m⁻² s⁻¹]',
+                total_groundwater_recharge: 'Total GW Recharge — Sum of diffuse and focused groundwater recharge [kg m⁻² s⁻¹]',
+                local_lake_outflow: 'Local Lake Outflow — Outflow from local lakes (within-cell inflow) [kg m⁻² s⁻¹]',
+                local_wetland_outflow: 'Local Wetland Outflow — Outflow from local wetlands [kg m⁻² s⁻¹]',
+                global_lake_outflow: 'Global Lake Outflow — Outflow from global lakes (receive upstream flow) [kg m⁻² s⁻¹]',
+                global_wetland_outflow: 'Global Wetland Outflow — Outflow from global wetlands [kg m⁻² s⁻¹]',
+                streamflow: 'Streamflow — River discharge [m³ s⁻¹]',
+                streamflow_from_upstream: 'Upstream Streamflow — Discharge received from upstream cells [kg m⁻² s⁻¹]',
+                actual_net_abstr_groundwater: 'Net Abstraction GW — Actual total water consumption from groundwater [kg m⁻² s⁻¹]',
+                actual_net_abstr_surfacewater: 'Net Abstraction SW — Actual total water consumption from surface water [kg m⁻² s⁻¹]',
+                actual_water_consumption: 'Total Water Consumption — Sum of GW and SW abstractions [kg m⁻² s⁻¹]',
+                cell_aet_consuse: 'Evapotranspiration + Use — Actual ET including total water consumption [kg m⁻² s⁻¹]',
+                unsat_potnetabs_sw_from_demandcell: 'Unsatisfied SW Demand — Unmet surface water demand from demand cell',
+                returned_demand_from_supplycell: 'Returned Demand — Demand returned from neighbouring supply cell',
+                returned_demand_from_supplycell_nextday: 'Returned Demand (Next Day) — Delayed returned demand from supply cell',
+                demand_left_excl_returned_nextday: 'Remaining Demand — Demand left excluding next-day returns',
+                potnetabs_sw: 'Potential Net Abstraction SW — Potential net abstraction from surface water',
+                get_neighbouring_cells_map: 'Neighbouring Cells Map — Map of neighbouring cell water supply network',
+                net_cell_runoff: 'Net Cell Runoff — Precipitation minus ET minus storage change [kg m⁻² s⁻¹]',
+                river_velocity: 'River Velocity — Flow velocity in rivers [m s⁻¹]',
+                land_area_fraction: 'Land Area Fraction — Fraction of grid cell that is land [–]',
+                // LB Storages
+                groundwater_storage: 'Groundwater Storage — Daily mean water in groundwater compartment [kg m⁻²]',
+                local_lake_storage: 'Local Lake Storage — Water stored in local lakes [kg m⁻²]',
+                local_wetland_storage: 'Local Wetland Storage — Water stored in local wetlands [kg m⁻²]',
+                global_lake_storage: 'Global Lake Storage — Water stored in global lakes [kg m⁻²]',
+                global_wetland_storage: 'Global Wetland Storage — Water stored in global wetlands [kg m⁻²]',
+                river_storage: 'River Storage — Daily mean water in river compartment [kg m⁻²]',
+                global_reservoir_storage: 'Reservoir Storage — Water in man-made reservoirs and regulated lakes [kg m⁻²]',
+                total_water_storage: 'Total Water Storage — Sum of all storage compartments (canopy + snow + soil + GW + rivers + lakes + wetlands + reservoirs) [kg m⁻²]',
+            },
+
+            // Input data state
+            inputData: {
+                datasets: [],
+                selectedDataset: '',
+                expandedCategory: null,
+                loading: false,
+            },
+
+            // Config state (flat, converted to nested JSON on submit)
+            config: {
+                ant: true,
+                subtract_use: true,
+                res_opt: true,
+                delayed_use: true,
+                neighbouring_cell: true,
+                start: '1901-01-01',
+                end: '1902-12-31',
+                spinup_years: 5,
+                reservoir_start_year: 1901,
+                reservoir_end_year: 2019,
+                vb_fluxes: {
+                    pot_evap: true, net_rad: true, leaf_area_index: true,
+                    canopy_evap: true, throughfall: true, snow_fall: true,
+                    snow_melt: true, snow_evap: true,
+                    groundwater_recharge_diffuse: true, surface_runoff: true,
+                    snowcover_frac: true,
+                },
+                vb_storages: {
+                    canopy_storage: true, snow_water_equiv: true,
+                    soil_moisture: true, maximum_soil_moisture: true,
+                },
+                lb_fluxes: {
+                    consistent_precipitation: true, groundwater_discharge: true,
+                    total_runoff: true, pot_cell_runoff: true,
+                    groundwater_recharge_swb: true, total_groundwater_recharge: true,
+                    local_lake_outflow: true, local_wetland_outflow: true,
+                    global_lake_outflow: true, global_wetland_outflow: true,
+                    streamflow: true, streamflow_from_upstream: true,
+                    actual_net_abstr_groundwater: true, actual_net_abstr_surfacewater: true,
+                    actual_water_consumption: true, cell_aet_consuse: true,
+                    unsat_potnetabs_sw_from_demandcell: true,
+                    returned_demand_from_supplycell: true,
+                    returned_demand_from_supplycell_nextday: true,
+                    demand_left_excl_returned_nextday: true,
+                    potnetabs_sw: true, get_neighbouring_cells_map: true,
+                    net_cell_runoff: true, river_velocity: true,
+                    land_area_fraction: true,
+                },
+                lb_storages: {
+                    groundwater_storage: true, local_lake_storage: true,
+                    local_wetland_storage: true, global_lake_storage: true,
+                    global_wetland_storage: true, river_storage: true,
+                    global_reservoir_storage: true, total_water_storage: true,
+                },
+            },
+
+            // --- Computed ---
+
+            get validationError() {
+                if (!this.inputData.selectedDataset && this.inputData.datasets.length > 0) {
+                    return 'Please select an input dataset.';
+                }
+                if (this.config.ant && !this.config.subtract_use && !this.config.res_opt) {
+                    return 'Anthropogenic run requires at least Subtract Water Use or Reservoir Operation.';
+                }
+                if (!this.config.start || !this.config.end) return 'Start and end dates must be set.';
+                if (this.config.start >= this.config.end) return 'Start date must be before end date.';
+                return '';
+            },
+
+            get statusBadgeClass() {
+                if (this.jobStatus === 'running') return 'bg-blue-100 text-blue-700';
+                if (this.jobStatus === 'completed') return 'bg-green-100 text-green-700';
+                if (this.jobStatus === 'failed') return 'bg-red-100 text-red-700';
+                return 'bg-gray-100 text-gray-700';
+            },
+
+            get statusDotClass() {
+                if (this.jobStatus === 'running') return 'bg-blue-500 animate-pulse';
+                if (this.jobStatus === 'completed') return 'bg-green-500';
+                if (this.jobStatus === 'failed') return 'bg-red-500';
+                return 'bg-gray-400';
+            },
+
+            get statusLabel() {
+                const labels = { running: 'Running', completed: 'Completed', failed: 'Error' };
+                return labels[this.jobStatus] || this.jobStatus;
+            },
+
+            // --- Init ---
+
+            async init() {
+                try {
+                    const [presetsRes, inputRes] = await Promise.all([
+                        fetch(API_BASE + '/api/presets'),
+                        fetch(API_BASE + '/api/input-datasets'),
+                    ]);
+                    this.presets = await presetsRes.json();
+                    const inputData = await inputRes.json();
+                    this.inputData.datasets = inputData.datasets || [];
+                    // Auto-select first dataset if available
+                    if (this.inputData.datasets.length > 0) {
+                        this.inputData.selectedDataset = this.inputData.datasets[0].id;
+                    }
+                } catch (e) {
+                    console.warn('Could not load presets/datasets:', e);
+                }
+            },
+
+            // --- Simulation page methods ---
+
+            loadPreset() {
+                const preset = this.presets.find(p => p.id === this.selectedPreset);
+                if (!preset) return;
+                const c = preset.config;
+                try {
+                    const opts = c.RuntimeOptions[0].SimulationOption;
+                    this.config.ant = opts.AntNat_opts.ant;
+                    this.config.subtract_use = opts.AntNat_opts.subtract_use;
+                    this.config.res_opt = opts.AntNat_opts.res_opt;
+                    this.config.delayed_use = opts.Demand_satisfaction_opts.delayed_use;
+                    this.config.neighbouring_cell = opts.Demand_satisfaction_opts.neighbouring_cell;
+
+                    const period = c.RuntimeOptions[2].SimulationPeriod;
+                    this.config.start = period.start;
+                    this.config.end = period.end;
+                    this.config.spinup_years = period.spinup_years;
+                    this.config.reservoir_start_year = period.reservoir_start_year;
+                    this.config.reservoir_end_year = period.reservoir_end_year;
+
+                    Object.assign(this.config.vb_fluxes, c.OutputVariable[0].VerticalWaterBalanceFluxes);
+                    Object.assign(this.config.vb_storages, c.OutputVariable[1].VerticalWaterBalanceStorages);
+                    Object.assign(this.config.lb_fluxes, c.OutputVariable[2].LateralWaterBalanceFluxes);
+                    Object.assign(this.config.lb_storages, c.OutputVariable[3].LateralWaterBalanceStorages);
+                } catch (e) {
+                    console.warn('Error loading preset:', e);
+                }
+            },
+
+            onAntChanged() {
+                if (!this.config.ant) {
+                    this.config.subtract_use = false;
+                    this.config.res_opt = false;
+                    this.config.delayed_use = false;
+                    this.config.neighbouring_cell = false;
+                }
+            },
+
+            countTrue(obj) {
+                return Object.values(obj).filter(v => v === true).length;
+            },
+
+            allOutputVarsOn() {
+                const groups = [this.config.vb_fluxes, this.config.vb_storages, this.config.lb_fluxes, this.config.lb_storages];
+                return groups.every(g => Object.values(g).every(v => v === true));
+            },
+
+            toggleAllOutputVars() {
+                const newVal = !this.allOutputVarsOn();
+                for (const group of [this.config.vb_fluxes, this.config.vb_storages, this.config.lb_fluxes, this.config.lb_storages]) {
+                    for (const key of Object.keys(group)) { group[key] = newVal; }
+                }
+            },
+
+            getSelectedDataset() {
+                return this.inputData.datasets.find(d => d.id === this.inputData.selectedDataset);
+            },
+
+            toggleHelp(key) {
+                this.openHelp = this.openHelp === key ? '' : key;
+            },
+
+            toggleCategory(cat) {
+                this.inputData.expandedCategory = this.inputData.expandedCategory === cat ? null : cat;
+            },
+
+            buildPayload() {
+                const payload = {
+                    simulation_option: {
+                        AntNat_opts: { ant: this.config.ant, subtract_use: this.config.subtract_use, res_opt: this.config.res_opt },
+                        Demand_satisfaction_opts: { delayed_use: this.config.delayed_use, neighbouring_cell: this.config.neighbouring_cell },
+                    },
+                    simulation_period: {
+                        start: this.config.start, end: this.config.end,
+                        spinup_years: this.config.spinup_years,
+                        reservoir_start_year: this.config.reservoir_start_year,
+                        reservoir_end_year: this.config.reservoir_end_year,
+                    },
+                    vb_fluxes: { ...this.config.vb_fluxes },
+                    vb_storages: { ...this.config.vb_storages },
+                    lb_fluxes: { ...this.config.lb_fluxes },
+                    lb_storages: { ...this.config.lb_storages },
+                };
+
+                // Include input data paths from selected dataset
+                const ds = this.getSelectedDataset();
+                if (ds && ds.paths) {
+                    payload.file_path_config = {
+                        inputDir: {
+                            climate_forcing: ds.paths.climate_forcing,
+                            water_use_data: ds.paths.water_use,
+                            static_land_data: ds.paths.static_input,
+                            parameter_path: 'model/WaterGAP_2.2e_global_parameters_gswp3_w5e5.nc',
+                        },
+                        outputDir: 'output_data/',
+                    };
+                }
+
+                return payload;
+            },
+
+            async startSimulation() {
+                if (this.validationError) return;
+                try {
+                    const res = await fetch(API_BASE + '/api/simulate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.buildPayload()),
+                    });
+                    if (!res.ok) {
+                        const err = await res.json();
+                        alert(err.detail || 'Error starting simulation');
+                        return;
+                    }
+                    const data = await res.json();
+                    this.currentJob = data.job_id;
+                    this.jobStatus = 'running';
+                    this.logOutput = '';
+                    this.view = 'running';
+                    this.startPolling();
+                } catch (e) {
+                    alert('Connection error: ' + e.message);
+                }
+            },
+
+            startPolling() {
+                if (this.pollInterval) clearInterval(this.pollInterval);
+                this.pollInterval = setInterval(() => this.pollStatus(), 3000);
+            },
+
+            async pollStatus() {
+                if (!this.currentJob) return;
+                try {
+                    const res = await fetch(API_BASE + `/api/status/${this.currentJob}`);
+                    const data = await res.json();
+                    this.jobStatus = data.status;
+                    this.logOutput = data.log_tail || '';
+                    if (data.status === 'completed' || data.status === 'failed') {
+                        clearInterval(this.pollInterval);
+                        this.pollInterval = null;
+                    }
+                } catch (e) {
+                    console.warn('Poll error:', e);
+                }
+            },
+
+            async cancelSimulation() {
+                if (!this.currentJob) return;
+                try {
+                    await fetch(API_BASE + `/api/cancel/${this.currentJob}`, { method: 'POST' });
+                    clearInterval(this.pollInterval);
+                    this.jobStatus = 'failed';
+                    this.logOutput += '\n\n--- Simulation cancelled ---';
+                } catch (e) {
+                    console.warn('Cancel error:', e);
+                }
+            },
+
+            viewJobResults(jobId) {
+                this.page = 'visualization';
+                this.initVisualizationPage().then(() => {
+                    this.viz.sourceId = jobId;
+                    this.onSourceChanged();
+                });
+            },
+
+            // --- Visualization page methods ---
+
+            async initVisualizationPage() {
+                try {
+                    const [jobsRes, uploadsRes] = await Promise.all([
+                        fetch(API_BASE + '/api/jobs'),
+                        fetch(API_BASE + '/api/uploads'),
+                    ]);
+                    this.viz.jobs = await jobsRes.json();
+                    this.viz.uploads = await uploadsRes.json();
+                } catch (e) {
+                    console.warn('Error loading visualization data:', e);
+                }
+            },
+
+            async onSourceChanged() {
+                this.stopPlay();
+                this.viewer.mapUrl = '';
+                this.viewer.variables = {};
+                if (!this.viz.sourceId) return;
+
+                this.viz.isJob = this.viz.jobs.some(j => j.job_id === this.viz.sourceId);
+                this.viewer.loading = true;
+
+                try {
+                    const res = await fetch(API_BASE + `/api/variables/${this.viz.sourceId}`);
+                    this.viewer.variables = await res.json();
+                    const keys = Object.keys(this.viewer.variables);
+                    if (keys.length > 0) {
+                        this.viewer.selectedVar = keys[0];
+                        this.onVarChanged();
+                    }
+                } catch (e) {
+                    console.warn('Variables error:', e);
+                    this.viewer.loading = false;
+                }
+            },
+
+            handleFileDrop(event) {
+                event.currentTarget.classList.remove('dragover');
+                const file = event.dataTransfer.files[0];
+                if (file) this.uploadFile(file);
+            },
+
+            handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (file) this.uploadFile(file);
+                event.target.value = '';
+            },
+
+            async uploadFile(file) {
+                if (!file.name.endsWith('.nc')) {
+                    this.viz.uploadError = 'Only .nc (NetCDF) files are accepted.';
+                    return;
+                }
+                this.viz.uploading = true;
+                this.viz.uploadError = '';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const res = await fetch(API_BASE + '/api/upload', { method: 'POST', body: formData });
+                    if (!res.ok) {
+                        const err = await res.json();
+                        this.viz.uploadError = err.detail || 'Upload failed';
+                        this.viz.uploading = false;
+                        return;
+                    }
+                    const data = await res.json();
+                    this.viz.uploading = false;
+                    // Add to uploads list and select it
+                    this.viz.uploads.unshift({ upload_id: data.upload_id, filename: data.filename });
+                    this.viz.sourceId = data.upload_id;
+                    this.onSourceChanged();
+                } catch (e) {
+                    this.viz.uploadError = 'Upload error: ' + e.message;
+                    this.viz.uploading = false;
+                }
+            },
+
+            async deleteCurrentUpload() {
+                if (!this.viz.sourceId || this.viz.isJob) return;
+                if (!confirm('Delete this uploaded file?')) return;
+                const id = this.viz.sourceId;
+                try {
+                    await fetch(API_BASE + `/api/upload/${id}`, { method: 'DELETE' });
+                    this.viz.uploads = this.viz.uploads.filter(u => u.upload_id !== id);
+                    this.viz.sourceId = '';
+                    this.stopPlay();
+                    this.viewer.mapUrl = '';
+                    this.viewer.variables = {};
+                } catch (e) {
+                    console.warn('Delete error:', e);
+                }
+            },
+
+            // --- Viewer methods (shared) ---
+
+            currentTimeSteps() {
+                const info = this.viewer.variables[this.viewer.selectedVar];
+                return info ? info.time_steps : [];
+            },
+
+            isStaticVar() {
+                const info = this.viewer.variables[this.viewer.selectedVar];
+                return info ? info.static : false;
+            },
+
+            onVarChanged() {
+                this.stopPlay();
+                const steps = this.currentTimeSteps();
+                if (steps.length > 0) {
+                    this.viewer.timeIndex = 0;
+                    this.viewer.selectedTime = steps[0];
+                } else {
+                    this.viewer.selectedTime = '';
+                    this.viewer.timeIndex = 0;
+                }
+                this.loadMap();
+            },
+
+            loadMap() {
+                this.viewer.loading = true;
+                const sid = this.viz.sourceId;
+                let url = API_BASE + `/api/map/${sid}?var=${encodeURIComponent(this.viewer.selectedVar)}`;
+                if (this.viewer.selectedTime && !this.isStaticVar()) {
+                    url += `&time=${encodeURIComponent(this.viewer.selectedTime)}`;
+                }
+                url += `&_t=${Date.now()}`;
+                this.viewer.mapUrl = url;
+
+                const steps = this.currentTimeSteps();
+                const idx = steps.indexOf(this.viewer.selectedTime);
+                if (idx >= 0) this.viewer.timeIndex = idx;
+            },
+
+            stepTime(delta) {
+                const steps = this.currentTimeSteps();
+                const newIdx = this.viewer.timeIndex + delta;
+                if (newIdx >= 0 && newIdx < steps.length) {
+                    this.viewer.timeIndex = newIdx;
+                    this.viewer.selectedTime = steps[newIdx];
+                    this.loadMap();
+                }
+            },
+
+            togglePlay() {
+                if (this.viewer.playing) {
+                    this.stopPlay();
+                } else {
+                    this.viewer.playing = true;
+                    this.viewer.playInterval = setInterval(() => {
+                        const steps = this.currentTimeSteps();
+                        if (this.viewer.timeIndex >= steps.length - 1) {
+                            this.viewer.timeIndex = 0;
+                        } else {
+                            this.viewer.timeIndex++;
+                        }
+                        this.viewer.selectedTime = steps[this.viewer.timeIndex];
+                        this.loadMap();
+                    }, 800);
+                }
+            },
+
+            stopPlay() {
+                this.viewer.playing = false;
+                if (this.viewer.playInterval) {
+                    clearInterval(this.viewer.playInterval);
+                    this.viewer.playInterval = null;
+                }
+            },
+        };
+    }
+    </script>
+</body>
+</html>
