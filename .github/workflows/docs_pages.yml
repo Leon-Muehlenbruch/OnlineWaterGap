@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - 2.2e_online
       - WaterGAP-2.2e
       - WaterGAP-2.3
 
@@ -15,12 +16,12 @@ jobs:
     name: Build docs
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code  
+      - name: Checkout code
         uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: 3.9
-        
+
       - name: Install dependencies
         run: |
           pip install sphinx sphinx_rtd_theme numpydoc numpy numba termcolor pydata-sphinx-theme sphinx-design
@@ -28,11 +29,24 @@ jobs:
       - name: Sphinx build
         run: |
           sphinx-build docs _build
-      - name: Deploy
+
+      # Deploy 2.2e_online to root (no keep_files so it fully owns the root)
+      - name: Deploy to root (2.2e_online)
+        if: github.ref_name == '2.2e_online'
         uses: peaceiris/actions-gh-pages@v3
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _build/
-          destination_dir: ${{ github.ref_name == 'main' && '.' || (github.ref_name == 'WaterGAP-2.2e' && '2.2' || (github.ref_name == 'WaterGAP-2.3' && '2.3' || github.ref_name)) }}
+          keep_files: false
+
+      # Deploy other branches into subdirectories (keep_files to preserve root + other versions)
+      - name: Deploy to subdirectory (other branches)
+        if: github.ref_name != '2.2e_online'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _build/
+          destination_dir: ${{ github.ref_name == 'main' && 'dev' || (github.ref_name == 'WaterGAP-2.2e' && '2.2' || (github.ref_name == 'WaterGAP-2.3' && '2.3' || github.ref_name)) }}
           keep_files: true
