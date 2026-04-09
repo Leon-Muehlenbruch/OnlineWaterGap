@@ -386,9 +386,9 @@
                         <div x-show="config.run_basin" x-cloak>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Path to Stations File</label>
                             <input type="text" x-model="config.stations_file"
-                                   placeholder="e.g. input_data/static_input/stations.csv"
+                                   placeholder="e.g. input_data/static_input/"
                                    class="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
-                            <p class="text-xs text-gray-400 mt-1">CSV file with outlet coordinates (Lat, Lon columns). The file <code>misc/mississippi_basin.csv</code> is included as an example.</p>
+                            <p class="text-xs text-gray-400 mt-1">Directory containing a <code>stations.csv</code> file with outlet coordinates (Lat, Lon columns). WaterGAP appends <code>/stations.csv</code> automatically.</p>
                         </div>
                     </div>
 
@@ -993,7 +993,7 @@
                 reservoir_start_year: 1901,
                 reservoir_end_year: 2019,
                 run_basin: false,
-                stations_file: 'input_data/static_input/stations.csv',
+                stations_file: 'input_data/static_input/',
                 vb_fluxes: {
                     pot_evap: true, net_rad: true, leaf_area_index: true,
                     canopy_evap: true, throughfall: true, snow_fall: true,
