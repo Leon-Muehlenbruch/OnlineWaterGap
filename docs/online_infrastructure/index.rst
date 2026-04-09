@@ -4,9 +4,7 @@
 Online Infrastructure
 ######################
 
-This section documents the architecture and deployment setup of the
-**OnlineWaterGap** web interface — a thin layer that makes ReWaterGAP
-accessible through a browser without modifying the core model code.
+This section documents the architecture and deployment setup of the **OnlineWaterGap** web interface, which makes ReWaterGAP accessible through a browser without modifying the core model code.
 
 .. contents:: On this page
    :local:
