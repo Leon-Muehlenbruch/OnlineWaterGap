@@ -5,7 +5,8 @@
   "framework": null,
   "git": {
     "deploymentEnabled": {
-      "main": true,
+      "main": false,
+      "2.2e_online": true,
       "gh-pages": false
     }
   },
