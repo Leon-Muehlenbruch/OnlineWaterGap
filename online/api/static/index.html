@@ -476,7 +476,10 @@
                                 'text-red-600': jobStatus === 'failed'
                             }" x-text="jobStatus === 'running' ? 'Computing...' : jobStatus === 'completed' ? 'Completed!' : 'Error'"></span>
                         </div>
-                        <p class="text-xs text-gray-500">Job: <span x-text="currentJob"></span></p>
+                        <p class="text-xs text-gray-500">
+                            <span x-show="currentRunNumber" x-text="'Run #' + currentRunNumber + ' — '"></span>
+                            Job: <span x-text="currentJob"></span>
+                        </p>
                     </div>
 
                     <!-- Log output -->
@@ -544,6 +547,10 @@
                             <!-- Header row -->
                             <div class="flex items-center justify-between mb-2">
                                 <div class="flex items-center gap-3">
+                                    <!-- Run number -->
+                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-xs font-bold text-gray-600"
+                                          :class="{ 'bg-blue-100 text-blue-700': run.status === 'running' }"
+                                          x-text="'#' + run.run_number"></span>
                                     <!-- Status dot -->
                                     <span class="w-2.5 h-2.5 rounded-full flex-shrink-0"
                                           :class="{
@@ -818,6 +825,7 @@
             presets: [],
             selectedPreset: '',
             currentJob: null,
+            currentRunNumber: null,
             jobStatus: null,
             logOutput: '',
             pollInterval: null,
@@ -1047,6 +1055,7 @@
                     const activeData = await activeRes.json();
                     if (activeData.active && activeData.job_id) {
                         this.currentJob = activeData.job_id;
+                        this.currentRunNumber = activeData.run_number || null;
                         this.jobStatus = 'running';
                         this.view = 'running';
                         this.startPolling();
@@ -1329,6 +1338,7 @@
                     }
                     const data = await res.json();
                     this.currentJob = data.job_id;
+                    this.currentRunNumber = data.run_number || null;
                     this.jobStatus = 'running';
                     this.logOutput = '';
                     this.view = 'running';

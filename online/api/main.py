@@ -559,7 +559,8 @@ def start_simulation(config: SimulationConfig):
         },
     }
 
-    return {"job_id": job_id, "status": "started"}
+    run_number = len([d for d in JOBS_DIR.iterdir() if d.is_dir()]) if JOBS_DIR.exists() else 1
+    return {"job_id": job_id, "status": "started", "run_number": run_number}
 
 
 @app.get("/api/status/{job_id}")
@@ -647,64 +648,67 @@ def list_jobs():
     jobs = []
     if not JOBS_DIR.exists():
         return jobs
-    for d in sorted(JOBS_DIR.iterdir(), reverse=True):
-        if d.is_dir():
-            config_path = d / "Config_ReWaterGAP.json"
-            log_path = d / "simulation.log"
-            output_dir = d / "output"
-            has_results = output_dir.exists() and any(output_dir.glob("*.nc"))
+    # Sort chronologically (oldest first) for numbering, reverse later for display
+    all_dirs = sorted(d for d in JOBS_DIR.iterdir() if d.is_dir())
+    dir_number = {d.name: i + 1 for i, d in enumerate(all_dirs)}
+    for d in reversed(all_dirs):
+        config_path = d / "Config_ReWaterGAP.json"
+        log_path = d / "simulation.log"
+        output_dir = d / "output"
+        has_results = output_dir.exists() and any(output_dir.glob("*.nc"))
 
-            # Determine status
-            if _current_job and _current_job["job_id"] == d.name:
-                proc = _current_job.get("process")
-                if proc and proc.poll() is None:
-                    status = "running"
-                elif proc and proc.returncode == 0:
-                    status = "completed"
-                else:
-                    status = "failed"
-            elif has_results:
+        # Determine status
+        if _current_job and _current_job["job_id"] == d.name:
+            proc = _current_job.get("process")
+            if proc and proc.poll() is None:
+                status = "running"
+            elif proc and proc.returncode == 0:
                 status = "completed"
-            elif log_path.exists():
-                status = "failed"
             else:
-                status = "unknown"
+                status = "failed"
+        elif has_results:
+            status = "completed"
+        elif log_path.exists():
+            status = "failed"
+        else:
+            status = "unknown"
 
-            # Parse config for summary
-            config_summary = {}
-            if config_path.exists():
-                try:
-                    cfg = json.loads(config_path.read_text())
-                    p = cfg.get("RuntimeOptions", [{}])[2].get("SimulationPeriod", {})
-                    sim_opt = cfg.get("RuntimeOptions", [{}])[0].get("SimulationOption", {})
-                    ant_nat = sim_opt.get("AntNat_opts", {})
-                    config_summary = {
-                        "start": p.get("start", ""),
-                        "end": p.get("end", ""),
-                        "spinup_years": p.get("spinup_years", 0),
-                        "ant": ant_nat.get("ant", False),
-                        "subtract_use": ant_nat.get("subtract_use", False),
-                        "res_opt": ant_nat.get("res_opt", False),
-                    }
-                except Exception:
-                    pass
-
-            # Parse timestamp from job_id (format: YYYYMMDD_HHMMSS_hex)
-            started_at = ""
+        # Parse config for summary
+        config_summary = {}
+        if config_path.exists():
             try:
-                ts = d.name[:15]  # "20260409_141443"
-                started_at = f"{ts[:4]}-{ts[4:6]}-{ts[6:8]} {ts[9:11]}:{ts[11:13]}:{ts[13:15]}"
+                cfg = json.loads(config_path.read_text())
+                p = cfg.get("RuntimeOptions", [{}])[2].get("SimulationPeriod", {})
+                sim_opt = cfg.get("RuntimeOptions", [{}])[0].get("SimulationOption", {})
+                ant_nat = sim_opt.get("AntNat_opts", {})
+                config_summary = {
+                    "start": p.get("start", ""),
+                    "end": p.get("end", ""),
+                    "spinup_years": p.get("spinup_years", 0),
+                    "ant": ant_nat.get("ant", False),
+                    "subtract_use": ant_nat.get("subtract_use", False),
+                    "res_opt": ant_nat.get("res_opt", False),
+                }
             except Exception:
                 pass
 
-            jobs.append({
-                "job_id": d.name,
-                "status": status,
-                "started_at": started_at,
-                "config_summary": config_summary,
-                "has_log": log_path.exists(),
-                "period": f"{config_summary.get('start', '')} to {config_summary.get('end', '')}" if config_summary.get('start') else "",
-            })
+        # Parse timestamp from job_id (format: YYYYMMDD_HHMMSS_hex)
+        started_at = ""
+        try:
+            ts = d.name[:15]  # "20260409_141443"
+            started_at = f"{ts[:4]}-{ts[4:6]}-{ts[6:8]} {ts[9:11]}:{ts[11:13]}:{ts[13:15]}"
+        except Exception:
+            pass
+
+        jobs.append({
+            "job_id": d.name,
+            "run_number": dir_number[d.name],
+            "status": status,
+            "started_at": started_at,
+            "config_summary": config_summary,
+            "has_log": log_path.exists(),
+            "period": f"{config_summary.get('start', '')} to {config_summary.get('end', '')}" if config_summary.get('start') else "",
+        })
     return jobs
 
 
@@ -715,7 +719,15 @@ def get_active_job():
         return {"active": False}
     proc = _current_job.get("process")
     if proc and proc.poll() is None:
-        return {"active": True, "job_id": _current_job["job_id"]}
+        # Calculate run number
+        run_number = 0
+        if JOBS_DIR.exists():
+            all_dirs = sorted(d.name for d in JOBS_DIR.iterdir() if d.is_dir())
+            try:
+                run_number = all_dirs.index(_current_job["job_id"]) + 1
+            except ValueError:
+                run_number = len(all_dirs)
+        return {"active": True, "job_id": _current_job["job_id"], "run_number": run_number}
     return {"active": False}
 
 
