@@ -30,7 +30,7 @@ User Guide
 
     .. grid-item-card:: 
         :text-align: center
-        :link: https://hydrologyfrankfurt.github.io/ReWaterGAP/contributers_guide/index.html
+        :link: https://leon-muehlenbruch.github.io/OnlineWaterGap/contributers_guide/index.html
         :link-type: url
 
         All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome. Find our **contributors guide** here.
