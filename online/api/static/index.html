@@ -185,118 +185,88 @@
                         </div>
                         <div x-show="openHelp === 'simmode'" x-cloak class="info-box mb-4">
                             WaterGAP supports four simulation modes:<br>
-                            <strong>Naturalized Run</strong> — No human impacts. Disable Anthropogenic to compute natural flows and storages without human water use or reservoirs.<br>
+                            <strong>Naturalized Run</strong> — No human impacts. Compute natural flows and storages without human water use or reservoirs.<br>
                             <strong>Standard Anthropogenic</strong> — Enable all options to simulate combined effects of human water use and man-made reservoirs on flows and storages.<br>
                             <strong>Human Water Use Only</strong> — Enable Anthropogenic + Subtract Water Use, disable Reservoir Operation.<br>
                             <strong>Reservoirs Only</strong> — Enable Anthropogenic + Reservoir Operation, disable Subtract Water Use.
                         </div>
-                        <p class="text-xs text-gray-400 mb-4" x-show="openHelp !== 'simmode'">Click <span class="info-btn" style="display:inline;cursor:default;font-size:9px;width:14px;height:14px;">i</span> for details on each option.</p>
 
-                        <div class="space-y-3">
-                            <!-- Anthropogenic Run -->
-                            <div>
-                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-sm font-medium text-gray-700">Anthropogenic Run</span>
-                                        <button type="button" class="info-btn" @click="toggleHelp('ant')" title="Info">i</button>
-                                    </div>
-                                    <button type="button" @click="config.ant = !config.ant; onAntChanged()"
-                                            class="relative w-11 h-6 rounded-full transition-colors"
-                                            :class="config.ant ? 'bg-blue-600' : 'bg-gray-300'">
-                                        <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                                              :class="config.ant ? 'translate-x-5' : ''"></span>
-                                    </button>
-                                </div>
-                                <div x-show="openHelp === 'ant'" x-cloak class="info-box">
-                                    When enabled, WaterGAP simulates <strong>human impacts</strong> on the water cycle. At least one of Subtract Water Use or Reservoir Operation must also be active. When disabled, a <strong>naturalized run</strong> is performed — computing flows and storages as they would occur without any human water use or man-made reservoirs.
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <!-- Subtract Water Use -->
-                                <div>
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-sm font-medium text-gray-700">Subtract Water Use</span>
-                                            <button type="button" class="info-btn" @click="toggleHelp('subtract')" title="Info">i</button>
-                                        </div>
-                                        <button type="button" @click="config.subtract_use = !config.subtract_use"
-                                                :disabled="!config.ant"
-                                                class="relative w-11 h-6 rounded-full transition-colors"
-                                                :class="config.subtract_use ? 'bg-blue-600' : 'bg-gray-300'">
-                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                                                  :class="config.subtract_use ? 'translate-x-5' : ''"></span>
-                                        </button>
-                                    </div>
-                                    <div x-show="openHelp === 'subtract'" x-cloak class="info-box">
-                                        Subtracts sectoral water consumption (irrigation, domestic, manufacturing, thermal power, livestock) from surface water and groundwater resources. This directly reduces river discharge, lake levels, and groundwater storage based on actual water demand.
-                                    </div>
-                                </div>
-
-                                <!-- Reservoir Operation -->
-                                <div>
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-sm font-medium text-gray-700">Reservoir Operation</span>
-                                            <button type="button" class="info-btn" @click="toggleHelp('resopt')" title="Info">i</button>
-                                        </div>
-                                        <button type="button" @click="config.res_opt = !config.res_opt"
-                                                :disabled="!config.ant"
-                                                class="relative w-11 h-6 rounded-full transition-colors"
-                                                :class="config.res_opt ? 'bg-blue-600' : 'bg-gray-300'">
-                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                                                  :class="config.res_opt ? 'translate-x-5' : ''"></span>
-                                        </button>
-                                    </div>
-                                    <div x-show="openHelp === 'resopt'" x-cloak class="info-box">
-                                        Includes the effects of <strong>man-made reservoirs and regulated lakes</strong> on river flow. Reservoirs alter the natural flow regime by storing water and releasing it according to operational rules. Their commissioning years determine when each reservoir becomes active during the simulation.
-                                    </div>
-                                </div>
-
-                                <!-- Delayed Use -->
-                                <div>
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-sm font-medium text-gray-700">Delayed Use</span>
-                                            <button type="button" class="info-btn" @click="toggleHelp('delayed')" title="Info">i</button>
-                                        </div>
-                                        <button type="button" @click="config.delayed_use = !config.delayed_use"
-                                                :disabled="!config.ant"
-                                                class="relative w-11 h-6 rounded-full transition-colors"
-                                                :class="config.delayed_use ? 'bg-blue-600' : 'bg-gray-300'">
-                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                                                  :class="config.delayed_use ? 'translate-x-5' : ''"></span>
-                                        </button>
-                                    </div>
-                                    <div x-show="openHelp === 'delayed'" x-cloak class="info-box">
-                                        <strong>Temporal demand satisfaction:</strong> If surface water demand cannot be fully met on the current day, the unsatisfied portion is carried over to the next day. This allows WaterGAP to satisfy water demand across time steps rather than losing unmet demand immediately.
-                                    </div>
-                                </div>
-
-                                <!-- Neighbouring Cell -->
-                                <div>
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg" :class="!config.ant && 'opacity-50'">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-sm font-medium text-gray-700">Neighbouring Cell Supply</span>
-                                            <button type="button" class="info-btn" @click="toggleHelp('neighbour')" title="Info">i</button>
-                                        </div>
-                                        <button type="button" @click="config.neighbouring_cell = !config.neighbouring_cell"
-                                                :disabled="!config.ant"
-                                                class="relative w-11 h-6 rounded-full transition-colors"
-                                                :class="config.neighbouring_cell ? 'bg-blue-600' : 'bg-gray-300'">
-                                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                                                  :class="config.neighbouring_cell ? 'translate-x-5' : ''"></span>
-                                        </button>
-                                    </div>
-                                    <div x-show="openHelp === 'neighbour'" x-cloak class="info-box">
-                                        <strong>Spatial demand satisfaction:</strong> If a grid cell's own surface water resources are insufficient, water can be supplied from neighbouring grid cells. Together with the riparian supply option (always enabled by default), this allows WaterGAP to redistribute water demand spatially across the river network.
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Mode selector buttons -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                            <button type="button" @click="setSimMode('naturalized')"
+                                    class="px-3 py-2.5 text-sm font-medium rounded-lg border-2 transition-all text-center"
+                                    :class="currentSimMode === 'naturalized'
+                                        ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'">
+                                Naturalized Run
+                            </button>
+                            <button type="button" @click="setSimMode('standard')"
+                                    class="px-3 py-2.5 text-sm font-medium rounded-lg border-2 transition-all text-center"
+                                    :class="currentSimMode === 'standard'
+                                        ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'">
+                                Standard Anthropogenic
+                            </button>
+                            <button type="button" @click="setSimMode('human_water_use')"
+                                    class="px-3 py-2.5 text-sm font-medium rounded-lg border-2 transition-all text-center"
+                                    :class="currentSimMode === 'human_water_use'
+                                        ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'">
+                                Human Water Use Only
+                            </button>
+                            <button type="button" @click="setSimMode('reservoirs')"
+                                    class="px-3 py-2.5 text-sm font-medium rounded-lg border-2 transition-all text-center"
+                                    :class="currentSimMode === 'reservoirs'
+                                        ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'">
+                                Reservoirs Only
+                            </button>
                         </div>
-                        <div x-show="config.ant && !config.subtract_use && !config.res_opt" x-cloak
-                             class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                            Anthropogenic run requires at least Subtract Water Use or Reservoir Operation to be enabled.
+
+                        <!-- Read-only toggle display (greyed out) -->
+                        <div class="space-y-2 opacity-60 pointer-events-none select-none">
+                            <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+                                <span class="text-sm text-gray-500">Anthropogenic Run</span>
+                                <div class="relative w-11 h-6 rounded-full transition-colors"
+                                     :class="config.ant ? 'bg-blue-400' : 'bg-gray-300'">
+                                    <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                          :class="config.ant ? 'translate-x-5' : ''"></span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+                                    <span class="text-sm text-gray-500">Subtract Water Use</span>
+                                    <div class="relative w-11 h-6 rounded-full transition-colors"
+                                         :class="config.subtract_use ? 'bg-blue-400' : 'bg-gray-300'">
+                                        <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                              :class="config.subtract_use ? 'translate-x-5' : ''"></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+                                    <span class="text-sm text-gray-500">Reservoir Operation</span>
+                                    <div class="relative w-11 h-6 rounded-full transition-colors"
+                                         :class="config.res_opt ? 'bg-blue-400' : 'bg-gray-300'">
+                                        <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                              :class="config.res_opt ? 'translate-x-5' : ''"></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+                                    <span class="text-sm text-gray-500">Delayed Use</span>
+                                    <div class="relative w-11 h-6 rounded-full transition-colors"
+                                         :class="config.delayed_use ? 'bg-blue-400' : 'bg-gray-300'">
+                                        <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                              :class="config.delayed_use ? 'translate-x-5' : ''"></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+                                    <span class="text-sm text-gray-500">Neighbouring Cell Supply</span>
+                                    <div class="relative w-11 h-6 rounded-full transition-colors"
+                                         :class="config.neighbouring_cell ? 'bg-blue-400' : 'bg-gray-300'">
+                                        <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                                              :class="config.neighbouring_cell ? 'translate-x-5' : ''"></span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -879,7 +849,7 @@
                     return 'Please select an input dataset.';
                 }
                 if (this.config.ant && !this.config.subtract_use && !this.config.res_opt) {
-                    return 'Anthropogenic run requires at least Subtract Water Use or Reservoir Operation.';
+                    return 'Please select a valid simulation mode.';
                 }
                 if (!this.config.start || !this.config.end) return 'Start and end dates must be set.';
                 if (this.config.start >= this.config.end) return 'Start date must be before end date.';
@@ -965,6 +935,47 @@
                     Object.assign(this.config.lb_storages, c.OutputVariable[3].LateralWaterBalanceStorages);
                 } catch (e) {
                     console.warn('Error loading preset:', e);
+                }
+            },
+
+            get currentSimMode() {
+                if (!this.config.ant) return 'naturalized';
+                if (this.config.subtract_use && this.config.res_opt) return 'standard';
+                if (this.config.subtract_use && !this.config.res_opt) return 'human_water_use';
+                if (!this.config.subtract_use && this.config.res_opt) return 'reservoirs';
+                return null;
+            },
+
+            setSimMode(mode) {
+                switch (mode) {
+                    case 'naturalized':
+                        this.config.ant = false;
+                        this.config.subtract_use = false;
+                        this.config.res_opt = false;
+                        this.config.delayed_use = false;
+                        this.config.neighbouring_cell = false;
+                        break;
+                    case 'standard':
+                        this.config.ant = true;
+                        this.config.subtract_use = true;
+                        this.config.res_opt = true;
+                        this.config.delayed_use = true;
+                        this.config.neighbouring_cell = true;
+                        break;
+                    case 'human_water_use':
+                        this.config.ant = true;
+                        this.config.subtract_use = true;
+                        this.config.res_opt = false;
+                        this.config.delayed_use = true;
+                        this.config.neighbouring_cell = true;
+                        break;
+                    case 'reservoirs':
+                        this.config.ant = true;
+                        this.config.subtract_use = false;
+                        this.config.res_opt = true;
+                        this.config.delayed_use = false;
+                        this.config.neighbouring_cell = false;
+                        break;
                 }
             },
 
