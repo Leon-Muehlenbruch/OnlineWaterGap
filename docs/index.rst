@@ -7,8 +7,8 @@ ReWaterGAP documentation
 **Date**: |today| **Version**: Development Version
 
 **Useful links**:
-`Source Repository <https://github.com/HydrologyFrankfurt/ReWaterGAP>`__ |
-`Issues & Ideas <https://github.com/HydrologyFrankfurt/ReWaterGAP/issues>`__ |
+`Source Repository <https://github.com/Leon-Muehlenbruch/OnlineWaterGap>`__ |
+`Issues & Ideas <https://github.com/Leon-Muehlenbruch/OnlineWaterGap/issues>`__ |
 
 :mod:`ReWaterGAP` is an open source, GNU-GPL 3-licensed hydrological simulation software for quantifying water flows and storages on all continents of the Earth.
 

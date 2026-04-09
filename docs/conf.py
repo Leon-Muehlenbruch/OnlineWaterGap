@@ -110,10 +110,10 @@ html_theme_options = {
     "external_links": [],
     "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
     "switcher": {
-        "json_url": "https://raw.githubusercontent.com/HydrologyFrankfurt/ReWaterGAP/refs/heads/main/docs/versions.json",
+        "json_url": "https://raw.githubusercontent.com/Leon-Muehlenbruch/OnlineWaterGap/refs/heads/2.2e_online/docs/versions.json",
         "version_match": switcher_version,
     },
-    "github_url": "https://github.com/HydrologyFrankfurt/ReWaterGAP",
+    "github_url": "https://github.com/Leon-Muehlenbruch/OnlineWaterGap",
     "twitter_url": "https://twitter.com/HydroFrankfurt",
 }
 

@@ -1,19 +1,23 @@
 [
     {
+        "name": "2.2e Online",
+        "version": "2.2e Online",
+        "url": "https://leon-muehlenbruch.github.io/OnlineWaterGap/",
+        "preferred": true
+    },
+    {
         "name": "dev",
         "version": "dev",
-        "url": "https://hydrologyfrankfurt.github.io/ReWaterGAP/"
-      },
+        "url": "https://leon-muehlenbruch.github.io/OnlineWaterGap/dev/"
+    },
     {
         "name": "2.2e (stable)",
         "version": "2.2e (stable)",
-        "url": "https://hydrologyfrankfurt.github.io/ReWaterGAP/2.2/",
-        "preferred": true
+        "url": "https://leon-muehlenbruch.github.io/OnlineWaterGap/2.2/"
     },
     {
         "name": "2.3 (under development)",
         "version": "2.3 (under development)",
-        "url": "https://hydrologyfrankfurt.github.io/ReWaterGAP/2.3/",
-        "preferred": true
+        "url": "https://leon-muehlenbruch.github.io/OnlineWaterGap/2.3/"
     }
 ]
