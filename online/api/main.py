@@ -28,6 +28,12 @@ from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, field_validator
 
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
+
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
@@ -729,6 +735,77 @@ def get_active_job():
                 run_number = len(all_dirs)
         return {"active": True, "job_id": _current_job["job_id"], "run_number": run_number}
     return {"active": False}
+
+
+@app.get("/api/resources")
+def get_resources():
+    """Return current system resource usage."""
+    if HAS_PSUTIL:
+        mem = psutil.virtual_memory()
+        swap = psutil.swap_memory()
+        return {
+            "ram_total_gb": round(mem.total / (1024**3), 1),
+            "ram_used_gb": round(mem.used / (1024**3), 1),
+            "ram_percent": mem.percent,
+            "swap_total_gb": round(swap.total / (1024**3), 1),
+            "swap_used_gb": round(swap.used / (1024**3), 1),
+            "swap_percent": swap.percent,
+            "cpu_percent": psutil.cpu_percent(interval=0.5),
+        }
+    else:
+        # Fallback: parse /proc
+        result = {}
+        try:
+            with open("/proc/meminfo") as f:
+                info = {}
+                for line in f:
+                    parts = line.split()
+                    info[parts[0].rstrip(":")] = int(parts[1])
+                total = info.get("MemTotal", 0) / (1024**2)
+                avail = info.get("MemAvailable", 0) / (1024**2)
+                swap_total = info.get("SwapTotal", 0) / (1024**2)
+                swap_free = info.get("SwapFree", 0) / (1024**2)
+                result = {
+                    "ram_total_gb": round(total, 1),
+                    "ram_used_gb": round(total - avail, 1),
+                    "ram_percent": round((total - avail) / total * 100, 1) if total else 0,
+                    "swap_total_gb": round(swap_total, 1),
+                    "swap_used_gb": round(swap_total - swap_free, 1),
+                    "swap_percent": round((swap_total - swap_free) / swap_total * 100, 1) if swap_total else 0,
+                }
+        except Exception:
+            pass
+        return result
+
+
+class PresetSave(BaseModel):
+    name: str
+    config: dict
+
+
+@app.post("/api/presets")
+def save_preset(data: PresetSave):
+    """Save current config as a named preset."""
+    # Sanitize name for filename
+    safe_name = "".join(c if c.isalnum() or c in "-_ " else "" for c in data.name).strip()
+    if not safe_name:
+        raise HTTPException(status_code=400, detail="Invalid preset name")
+    file_id = safe_name.lower().replace(" ", "_")
+    preset_data = {"_name": data.name, **data.config}
+    preset_path = PRESETS_DIR / f"{file_id}.json"
+    with open(preset_path, "w") as f:
+        json.dump(preset_data, f, indent=2)
+    return {"id": file_id, "name": data.name}
+
+
+@app.delete("/api/presets/{preset_id}")
+def delete_preset(preset_id: str):
+    """Delete a custom preset."""
+    preset_path = PRESETS_DIR / f"{preset_id}.json"
+    if not preset_path.exists():
+        raise HTTPException(status_code=404, detail="Preset not found")
+    preset_path.unlink()
+    return {"status": "deleted"}
 
 
 @app.post("/api/upload")
