@@ -21,6 +21,7 @@ services:
       - watergap-output:/app/output_data
     environment:
       - PYTHONUNBUFFERED=1
+      - APP_BASE_DIR=/app
     restart: unless-stopped
 
 volumes:
