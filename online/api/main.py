@@ -643,27 +643,80 @@ def stream_log(job_id: str):
 
 @app.get("/api/jobs")
 def list_jobs():
-    """List all completed simulation jobs."""
+    """List all simulation jobs (completed, failed, or running)."""
     jobs = []
+    if not JOBS_DIR.exists():
+        return jobs
     for d in sorted(JOBS_DIR.iterdir(), reverse=True):
         if d.is_dir():
+            config_path = d / "Config_ReWaterGAP.json"
+            log_path = d / "simulation.log"
             output_dir = d / "output"
-            if output_dir.exists() and any(output_dir.glob("*.nc")):
-                # Read config summary if available
-                config_path = d / "Config_ReWaterGAP.json"
-                period_str = ""
-                if config_path.exists():
-                    try:
-                        cfg = json.loads(config_path.read_text())
-                        p = cfg.get("RuntimeOptions", [{}])[2].get("SimulationPeriod", {})
-                        period_str = f"{p.get('start', '')} to {p.get('end', '')}"
-                    except Exception:
-                        pass
-                jobs.append({
-                    "job_id": d.name,
-                    "period": period_str,
-                })
+            has_results = output_dir.exists() and any(output_dir.glob("*.nc"))
+
+            # Determine status
+            if _current_job and _current_job["job_id"] == d.name:
+                proc = _current_job.get("process")
+                if proc and proc.poll() is None:
+                    status = "running"
+                elif proc and proc.returncode == 0:
+                    status = "completed"
+                else:
+                    status = "failed"
+            elif has_results:
+                status = "completed"
+            elif log_path.exists():
+                status = "failed"
+            else:
+                status = "unknown"
+
+            # Parse config for summary
+            config_summary = {}
+            if config_path.exists():
+                try:
+                    cfg = json.loads(config_path.read_text())
+                    p = cfg.get("RuntimeOptions", [{}])[2].get("SimulationPeriod", {})
+                    sim_opt = cfg.get("RuntimeOptions", [{}])[0].get("SimulationOption", {})
+                    ant_nat = sim_opt.get("AntNat_opts", {})
+                    config_summary = {
+                        "start": p.get("start", ""),
+                        "end": p.get("end", ""),
+                        "spinup_years": p.get("spinup_years", 0),
+                        "ant": ant_nat.get("ant", False),
+                        "subtract_use": ant_nat.get("subtract_use", False),
+                        "res_opt": ant_nat.get("res_opt", False),
+                    }
+                except Exception:
+                    pass
+
+            # Parse timestamp from job_id (format: YYYYMMDD_HHMMSS_hex)
+            started_at = ""
+            try:
+                ts = d.name[:15]  # "20260409_141443"
+                started_at = f"{ts[:4]}-{ts[4:6]}-{ts[6:8]} {ts[9:11]}:{ts[11:13]}:{ts[13:15]}"
+            except Exception:
+                pass
+
+            jobs.append({
+                "job_id": d.name,
+                "status": status,
+                "started_at": started_at,
+                "config_summary": config_summary,
+                "has_log": log_path.exists(),
+                "period": f"{config_summary.get('start', '')} to {config_summary.get('end', '')}" if config_summary.get('start') else "",
+            })
     return jobs
+
+
+@app.get("/api/active-job")
+def get_active_job():
+    """Return the currently running job, if any. Used for page-load recovery."""
+    if not _current_job:
+        return {"active": False}
+    proc = _current_job.get("process")
+    if proc and proc.poll() is None:
+        return {"active": True, "job_id": _current_job["job_id"]}
+    return {"active": False}
 
 
 @app.post("/api/upload")
