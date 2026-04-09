@@ -1,0 +1,879 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Online Infrastructure &#8212; ReWaterGAP 2.2e Online documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=21cec0ba"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'online_infrastructure/index';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Leon-Muehlenbruch/OnlineWaterGap/refs/heads/2.2e_online/docs/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '2.2e Online';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Installation Issues" href="../contributers_guide/installation_issues.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2.2e Online" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/watergap_logo.png" class="logo__image only-light" alt="ReWaterGAP 2.2e Online documentation - Home"/>
+    <img src="../_static/watergap_logo.png" class="logo__image only-dark pst-js-only" alt="ReWaterGAP 2.2e Online documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../model_processes/index.html">
+    Model Processes
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributers_guide/index.html">
+    Contributers Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Online Infrastructure
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Leon-Muehlenbruch/OnlineWaterGap" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/HydroFrankfurt" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Twitter</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../model_processes/index.html">
+    Model Processes
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributers_guide/index.html">
+    Contributers Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Online Infrastructure
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Leon-Muehlenbruch/OnlineWaterGap" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://twitter.com/HydroFrankfurt" title="Twitter" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-twitter fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Twitter</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Online Infrastructure</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="online-infrastructure">
+<span id="id1"></span><h1>Online Infrastructure<a class="headerlink" href="#online-infrastructure" title="Link to this heading">#</a></h1>
+<p>This section documents the architecture and deployment setup of the
+<strong>OnlineWaterGap</strong> web interface — a thin layer that makes ReWaterGAP
+accessible through a browser without modifying the core model code.</p>
+<nav class="contents local" id="on-this-page">
+<p class="topic-title">On this page</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview" id="id3">Overview</a></p></li>
+<li><p><a class="reference internal" href="#request-flow" id="id4">Request flow</a></p></li>
+<li><p><a class="reference internal" href="#repository-layout" id="id5">Repository layout</a></p></li>
+<li><p><a class="reference internal" href="#frontend-vercel" id="id6">Frontend — Vercel</a></p>
+<ul>
+<li><p><a class="reference internal" href="#deployment" id="id7">Deployment</a></p></li>
+<li><p><a class="reference internal" href="#api-proxy" id="id8">API proxy</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#backend-hetzner-docker" id="id9">Backend — Hetzner + Docker</a></p>
+<ul>
+<li><p><a class="reference internal" href="#docker-image" id="id10">Docker image</a></p></li>
+<li><p><a class="reference internal" href="#volumes" id="id11">Volumes</a></p></li>
+<li><p><a class="reference internal" href="#api-endpoints" id="id12">API endpoints</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#database-supabase" id="id13">Database — Supabase</a></p></li>
+<li><p><a class="reference internal" href="#changes-relative-to-the-original-code-base" id="id14">Changes relative to the original code base</a></p></li>
+</ul>
+</nav>
+<section id="overview">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>OnlineWaterGap wraps the existing ReWaterGAP command-line application in a
+web-based frontend so that users can configure, launch, and visualise
+hydrological simulations from any modern browser.</p>
+<p>The stack consists of three components:</p>
+<ol class="arabic simple">
+<li><p><strong>Frontend</strong> — static HTML / JavaScript served by Vercel.</p></li>
+<li><p><strong>Backend</strong> — a FastAPI application running inside a Docker container on
+a Hetzner cloud server.  It spawns <code class="docutils literal notranslate"><span class="pre">run_watergap.py</span></code> as a subprocess,
+exactly as a local user would on the command line.</p></li>
+<li><p><strong>Database</strong> — a Supabase PostgreSQL instance that tracks simulation jobs
+and uploaded datasets.</p></li>
+</ol>
+<figure class="align-center" id="id2">
+<img alt="Architecture diagram" src="../_images/architecture.png" />
+<figcaption>
+<p><span class="caption-text">High-level data flow of OnlineWaterGap.</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="request-flow">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Request flow</a><a class="headerlink" href="#request-flow" title="Link to this heading">#</a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Browser
+  │
+  ▼
+Vercel  (online-water-gap.vercel.app)
+  │  serves static HTML/JS
+  │  proxies /api/* via rewrite rules
+  ▼
+Hetzner Docker host  (178.104.60.97:8000)
+  │  FastAPI + Uvicorn
+  │  starts run_watergap.py as subprocess
+  ▼
+WaterGAP simulation
+  │  reads input_data/ (9.6 GB, mounted read-only)
+  │  writes results to output_data/
+  ▼
+Supabase  (eu-central-1)
+  │  jobs &amp; uploads tables
+  ▼
+Browser receives status updates, logs, result ZIP
+</pre></div>
+</div>
+</section>
+<section id="repository-layout">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Repository layout</a><a class="headerlink" href="#repository-layout" title="Link to this heading">#</a></h2>
+<p>All files specific to the online version live in the <code class="docutils literal notranslate"><span class="pre">online/</span></code> directory,
+keeping the original ReWaterGAP code base untouched:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>online/
+├── api/
+│   ├── main.py          # FastAPI application
+│   └── static/          # Frontend (HTML, JS, CSS)
+├── Dockerfile           # Container image definition
+├── docker-compose.yml   # Service orchestration + volumes
+├── .dockerignore        # Files excluded from Docker build
+├── run_web.py           # Dev helper: installs deps + starts uvicorn
+├── vercel.json          # Vercel routing + API proxy config
+└── .vercelignore        # Files excluded from Vercel deploy
+</pre></div>
+</div>
+</section>
+<section id="frontend-vercel">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Frontend — Vercel</a><a class="headerlink" href="#frontend-vercel" title="Link to this heading">#</a></h2>
+<p>The frontend is a <strong>static single-page application</strong> (no build step) hosted
+on Vercel.</p>
+<section id="deployment">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Deployment</a><a class="headerlink" href="#deployment" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Vercel is connected to the GitHub repository and deploys automatically on
+every push to <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> branch is explicitly excluded in <code class="docutils literal notranslate"><span class="pre">vercel.json</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outputDirectory</span></code> is set to <code class="docutils literal notranslate"><span class="pre">online/api/static</span></code>.</p></li>
+</ul>
+</section>
+<section id="api-proxy">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">API proxy</a><a class="headerlink" href="#api-proxy" title="Link to this heading">#</a></h3>
+<p>To avoid mixed-content issues (the browser page is served over HTTPS while
+the Hetzner backend listens on HTTP), Vercel rewrites all <code class="docutils literal notranslate"><span class="pre">/api/*</span></code>
+requests to the backend:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;rewrites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/api/:path*&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;destination&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://178.104.60.97:8000/api/:path*&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="backend-hetzner-docker">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">Backend — Hetzner + Docker</a><a class="headerlink" href="#backend-hetzner-docker" title="Link to this heading">#</a></h2>
+<p>The compute-heavy simulation runs in a Docker container on a Hetzner cloud
+server.</p>
+<section id="docker-image">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Docker image</a><a class="headerlink" href="#docker-image" title="Link to this heading">#</a></h3>
+<p>The image is based on <code class="docutils literal notranslate"><span class="pre">python:3.10-slim</span></code> and installs:</p>
+<ul class="simple">
+<li><p>System libraries for HDF5 / NetCDF4 / Matplotlib</p></li>
+<li><p>Python dependencies from <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> (unchanged from the original)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fastapi</span></code>, <code class="docutils literal notranslate"><span class="pre">uvicorn</span></code>, and <code class="docutils literal notranslate"><span class="pre">python-multipart</span></code> as additional web
+dependencies</p></li>
+</ul>
+<div class="highlight-dockerfile notranslate"><div class="highlight"><pre><span></span><span class="k">FROM</span><span class="w"> </span><span class="s">python:3.10-slim</span>
+<span class="c"># ... system deps ...</span>
+<span class="k">COPY</span><span class="w"> </span>requirements.txt<span class="w"> </span>.
+<span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-cache-dir<span class="w"> </span>-r<span class="w"> </span>requirements.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-cache-dir<span class="w"> </span>fastapi<span class="w"> </span><span class="s2">&quot;uvicorn[standard]&quot;</span><span class="w"> </span>python-multipart
+<span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>.
+<span class="k">EXPOSE</span><span class="w"> </span><span class="s">8000</span>
+<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;uvicorn&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;api.main:app&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--host&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--port&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;8000&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="volumes">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Volumes</a><a class="headerlink" href="#volumes" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">docker-compose.yml</span></code> defines four volumes:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Volume</p></th>
+<th class="head"><p>Mode</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">./input_data</span></code></p></td>
+<td><p>read-only</p></td>
+<td><p>Climate forcing, water use, static data</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">watergap-jobs</span></code></p></td>
+<td><p>read-write</p></td>
+<td><p>Per-run config, logs, status</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">watergap-uploads</span></code></p></td>
+<td><p>read-write</p></td>
+<td><p>User-uploaded NetCDF files</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">watergap-output</span></code></p></td>
+<td><p>read-write</p></td>
+<td><p>Simulation result files</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="api-endpoints">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">API endpoints</a><a class="headerlink" href="#api-endpoints" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 10.0%" />
+<col style="width: 30.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Path</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/api/health</span></code></p></td>
+<td><p>Health check</p></td>
+</tr>
+<tr class="row-odd"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/api/simulate</span></code></p></td>
+<td><p>Start a new WaterGAP simulation</p></td>
+</tr>
+<tr class="row-even"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/api/status/{job_id}</span></code></p></td>
+<td><p>Poll job status (running / completed / failed)</p></td>
+</tr>
+<tr class="row-odd"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/api/cancel/{job_id}</span></code></p></td>
+<td><p>Terminate a running simulation</p></td>
+</tr>
+<tr class="row-even"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/api/result/{job_id}</span></code></p></td>
+<td><p>Download results as ZIP</p></td>
+</tr>
+<tr class="row-odd"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/api/log/{job_id}</span></code></p></td>
+<td><p>Stream simulation log</p></td>
+</tr>
+<tr class="row-even"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/api/input-datasets</span></code></p></td>
+<td><p>List available input data bundles</p></td>
+</tr>
+<tr class="row-odd"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/api/upload</span></code></p></td>
+<td><p>Upload a custom NetCDF file</p></td>
+</tr>
+<tr class="row-even"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/api/map/{source_id}</span></code></p></td>
+<td><p>Render a spatial map (PNG)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="database-supabase">
+<h2><a class="toc-backref" href="#id13" role="doc-backlink">Database — Supabase</a><a class="headerlink" href="#database-supabase" title="Link to this heading">#</a></h2>
+<p>A Supabase project (<code class="docutils literal notranslate"><span class="pre">rewatergap</span></code>, region <code class="docutils literal notranslate"><span class="pre">eu-central-1</span></code>) provides a
+managed PostgreSQL 17 database with two tables:</p>
+<p><strong>jobs</strong></p>
+<p>Tracks every simulation run.  Key columns: <code class="docutils literal notranslate"><span class="pre">job_id</span></code>, <code class="docutils literal notranslate"><span class="pre">status</span></code>,
+<code class="docutils literal notranslate"><span class="pre">config</span></code> (JSONB), <code class="docutils literal notranslate"><span class="pre">period_start</span></code>, <code class="docutils literal notranslate"><span class="pre">period_end</span></code>, <code class="docutils literal notranslate"><span class="pre">log_tail</span></code>,
+<code class="docutils literal notranslate"><span class="pre">created_at</span></code>, <code class="docutils literal notranslate"><span class="pre">completed_at</span></code>.  Row-Level Security is enabled.</p>
+<p><strong>uploads</strong></p>
+<p>Stores metadata for user-uploaded NetCDF files.  Key columns:
+<code class="docutils literal notranslate"><span class="pre">upload_id</span></code>, <code class="docutils literal notranslate"><span class="pre">filename</span></code>, <code class="docutils literal notranslate"><span class="pre">variables</span></code> (text array),
+<code class="docutils literal notranslate"><span class="pre">file_size_bytes</span></code>, <code class="docutils literal notranslate"><span class="pre">created_at</span></code>.  Row-Level Security is enabled.</p>
+</section>
+<section id="changes-relative-to-the-original-code-base">
+<h2><a class="toc-backref" href="#id14" role="doc-backlink">Changes relative to the original code base</a><a class="headerlink" href="#changes-relative-to-the-original-code-base" title="Link to this heading">#</a></h2>
+<p>The online version deliberately keeps changes <strong>minimal</strong>.  The core model
+code (<code class="docutils literal notranslate"><span class="pre">model/</span></code>, <code class="docutils literal notranslate"><span class="pre">controller/</span></code>, <code class="docutils literal notranslate"><span class="pre">calibration/</span></code>, <code class="docutils literal notranslate"><span class="pre">view/</span></code>) and the
+<code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> are <strong>identical</strong> to the upstream ReWaterGAP repository.</p>
+<p>The only additions are:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 35.0%" />
+<col style="width: 65.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>File</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">online/api/main.py</span></code></p></td>
+<td><p>FastAPI wrapper that calls <code class="docutils literal notranslate"><span class="pre">run_watergap.py</span></code> as a subprocess</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">online/api/static/</span></code></p></td>
+<td><p>Browser-based frontend (single-page app)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">online/Dockerfile</span></code></p></td>
+<td><p>Replaces the original conda-based Dockerfile with a slim pip-based
+image that starts Uvicorn instead of a one-shot CLI run</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">online/docker-compose.yml</span></code></p></td>
+<td><p>Adds volume mounts for input data, jobs, uploads, and output</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">online/run_web.py</span></code></p></td>
+<td><p>Developer convenience script (auto-installs FastAPI, starts server)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">online/vercel.json</span></code></p></td>
+<td><p>Routes frontend traffic and proxies API calls to Hetzner</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">online/.vercelignore</span></code></p></td>
+<td><p>Excludes Python / Docker files from Vercel build</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">online/.dockerignore</span></code></p></td>
+<td><p>Excludes IDE / cache files from Docker build</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">docs/online_infrastructure/</span></code></p></td>
+<td><p>This documentation page</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../contributers_guide/installation_issues.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Installation Issues</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-flow">Request flow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#repository-layout">Repository layout</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#frontend-vercel">Frontend — Vercel</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deployment">Deployment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api-proxy">API proxy</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#backend-hetzner-docker">Backend — Hetzner + Docker</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#docker-image">Docker image</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#volumes">Volumes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api-endpoints">API endpoints</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#database-supabase">Database — Supabase</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#changes-relative-to-the-original-code-base">Changes relative to the original code base</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/online_infrastructure/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, ReWaterGAP.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
