@@ -528,7 +528,7 @@ def start_simulation(config: SimulationConfig):
     log_fh = open(log_path, "w")
     try:
         proc = subprocess.Popen(
-            [sys.executable, "-u", "run_watergap.py"],
+            [sys.executable, "-u", "run_watergap.py", str(config_path)],
             cwd=str(BASE_DIR),
             env=env,
             stdout=log_fh,
