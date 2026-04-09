@@ -399,11 +399,17 @@
                                 <h2 class="text-lg font-semibold text-gray-800">Output Variables</h2>
                                 <button type="button" class="info-btn" @click="toggleHelp('outvars')" title="What is this?">i</button>
                             </div>
-                            <button type="button" @click="toggleAllOutputVars()"
-                                    class="px-4 py-1.5 text-sm font-medium rounded-lg border transition-colors"
-                                    :class="allOutputVarsOn() ? 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100' : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100'">
-                                Toggle All
-                            </button>
+                            <div class="flex gap-2">
+                                <button type="button" @click="toggleAllOutputGroups()"
+                                        class="px-3 py-1.5 text-sm font-medium rounded-lg border bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100 transition-colors"
+                                        x-text="outputGroupsOpen ? 'Collapse All' : 'Expand All'">
+                                </button>
+                                <button type="button" @click="toggleAllOutputVars()"
+                                        class="px-4 py-1.5 text-sm font-medium rounded-lg border transition-colors"
+                                        :class="allOutputVarsOn() ? 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100' : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100'">
+                                    Toggle All
+                                </button>
+                            </div>
                         </div>
                         <div x-show="openHelp === 'outvars'" x-cloak class="info-box mb-4">
                             Select which variables WaterGAP writes to NetCDF output files. Variables are grouped into four categories:<br>
@@ -416,7 +422,7 @@
                         <p class="text-xs text-gray-400 mb-3" x-show="openHelp !== 'outvars'">Toggle output variables per category. Hover over variable names for descriptions.</p>
 
                         <template x-for="[groupKey, groupLabel] in [['vb_fluxes','Vertical Water Balance — Fluxes'],['vb_storages','Vertical Water Balance — Storages'],['lb_fluxes','Lateral Water Balance — Fluxes'],['lb_storages','Lateral Water Balance — Storages']]" :key="groupKey">
-                            <details class="mb-3" open>
+                            <details class="mb-3">
                                 <summary class="cursor-pointer text-sm font-medium text-gray-700 py-2 px-3 bg-gray-50 rounded-lg hover:bg-gray-100">
                                     <span x-text="groupLabel"></span>
                                     <span class="text-xs text-gray-400 ml-2" x-text="countTrue(config[groupKey]) + '/' + Object.keys(config[groupKey]).length + ' selected'"></span>
@@ -1201,6 +1207,16 @@
             allOutputVarsOn() {
                 const groups = [this.config.vb_fluxes, this.config.vb_storages, this.config.lb_fluxes, this.config.lb_storages];
                 return groups.every(g => Object.values(g).every(v => v === true));
+            },
+
+            outputGroupsOpen: false,
+
+            toggleAllOutputGroups() {
+                this.outputGroupsOpen = !this.outputGroupsOpen;
+                document.querySelectorAll('details.mb-3').forEach(d => {
+                    if (this.outputGroupsOpen) d.setAttribute('open', '');
+                    else d.removeAttribute('open');
+                });
             },
 
             toggleAllOutputVars() {
