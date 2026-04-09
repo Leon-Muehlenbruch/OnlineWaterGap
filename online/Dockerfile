@@ -18,7 +18,11 @@ RUN pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir fastapi "uvicorn[standard]" python-multipart
 
 # Copy application code (input_data is excluded via .dockerignore)
+# Context is repo root; model code lives at /app/, online API at /app/online/api/
 COPY . .
+
+# Symlink so uvicorn can find 'api.main' at /app/api/main.py
+RUN ln -sf /app/online/api /app/api
 
 # Create directories the app expects
 RUN mkdir -p jobs uploads output_data
