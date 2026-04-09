@@ -661,7 +661,7 @@
                             <option value="">— Select a data source —</option>
                             <optgroup label="Simulation Runs" x-show="viz.jobs.length > 0">
                                 <template x-for="j in viz.jobs" :key="j.job_id">
-                                    <option :value="j.job_id" x-text="j.period ? ('Run: ' + j.period) : ('Run: ' + j.job_id)"></option>
+                                    <option :value="j.job_id" x-text="'#' + (j.run_number || '?') + ' — ' + (j.period || j.job_id)"></option>
                                 </template>
                             </optgroup>
                             <optgroup label="Uploaded Files" x-show="viz.uploads.length > 0">
