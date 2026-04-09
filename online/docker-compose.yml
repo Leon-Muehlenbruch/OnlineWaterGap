@@ -19,6 +19,7 @@ services:
       - watergap-jobs:/app/jobs
       - watergap-uploads:/app/uploads
       - watergap-output:/app/output_data
+      - watergap-presets:/app/api/presets
     environment:
       - PYTHONUNBUFFERED=1
       - APP_BASE_DIR=/app
@@ -28,3 +29,4 @@ volumes:
   watergap-jobs:
   watergap-uploads:
   watergap-output:
+  watergap-presets:
