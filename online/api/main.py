@@ -420,7 +420,7 @@ def get_time_range(dataset_id: str = Query("gswp3-w5e5")):
         if not cat_path.exists():
             continue
         cat_min, cat_max = None, None
-        for nc in sorted(cat_path.rglob("*.nc")):
+        for nc in sorted(list(cat_path.rglob("*.nc")) + list(cat_path.rglob("*.nc4"))):
             try:
                 with xr.open_dataset(nc) as ds:
                     if "time" not in ds.coords:
