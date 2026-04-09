@@ -31,7 +31,15 @@ from pydantic import BaseModel, field_validator
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-BASE_DIR = Path(__file__).resolve().parent.parent  # OnlineWaterGap/
+# In Docker the symlink /app/api -> /app/online/api makes resolve() point
+# to /app/online; we need /app (the true repo root).  Detect this by
+# checking whether input_data exists at the resolved parent-parent; if not,
+# walk up until we find it.
+_resolved = Path(__file__).resolve().parent.parent
+if (_resolved / "input_data").exists():
+    BASE_DIR = _resolved
+else:
+    BASE_DIR = _resolved.parent  # /app/online -> /app
 JOBS_DIR = BASE_DIR / "jobs"
 UPLOADS_DIR = BASE_DIR / "uploads"
 PRESETS_DIR = Path(__file__).resolve().parent / "presets"
