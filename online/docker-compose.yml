@@ -13,7 +13,7 @@ services:
     volumes:
       # Mount the large input data directory (9.6 GB) from host
       # Change the left side to match your data location on the server
-      - ./input_data:/app/input_data:ro
+      - ../input_data:/app/input_data:ro
 
       # Persist simulation results and uploads across container restarts
       - watergap-jobs:/app/jobs
