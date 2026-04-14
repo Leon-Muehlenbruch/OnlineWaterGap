@@ -271,11 +271,10 @@ def _get_job_status(job: dict) -> dict:
     else:
         status = "unknown"
 
-    # Read last 50 lines of log
+    # Read full log
     log_tail = ""
     if log_file.exists():
-        lines = log_file.read_text(errors="replace").splitlines()
-        log_tail = "\n".join(lines[-50:])
+        log_tail = log_file.read_text(errors="replace")
 
     return {
         "job_id": job["job_id"],
@@ -579,8 +578,7 @@ def get_status(job_id: str):
             log_path = job_dir / "simulation.log"
             log_tail = ""
             if log_path.exists():
-                lines = log_path.read_text(errors="replace").splitlines()
-                log_tail = "\n".join(lines[-50:])
+                log_tail = log_path.read_text(errors="replace")
             output_dir = job_dir / "output"
             has_results = output_dir.exists() and any(output_dir.iterdir())
             return {
