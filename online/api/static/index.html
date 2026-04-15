@@ -1391,7 +1391,42 @@ Browser receives status updates, logs, result maps</pre>
                        class="hover:text-gray-600 transition-colors">Branch: 2.2e_online</a>
                     <a href="https://www.gnu.org/licenses/lgpl-3.0.html" target="_blank" rel="noopener"
                        class="hover:text-gray-600 transition-colors">LGPL-v3</a>
+                    <button @click="showImpressum = !showImpressum" class="hover:text-gray-600 transition-colors">Impressum</button>
                 </div>
+            </div>
+            <!-- Impressum -->
+            <div x-show="showImpressum" x-cloak class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500 leading-relaxed">
+                <p class="font-semibold text-gray-600 mb-2">Impressum (Angaben gem&auml;&szlig; &sect; 5 DDG)</p>
+                <p class="mb-2">
+                    <strong>Verantwortlich:</strong><br>
+                    Leon M&uuml;hlenbruch<br>
+                    E-Mail: leonmuehlenbruch<!---->&#64;<!---->gmail.com
+                </p>
+                <p class="mb-2">
+                    <strong>Kontakt:</strong><br>
+                    <a href="https://github.com/Leon-Muehlenbruch" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800">github.com/Leon-Muehlenbruch</a>
+                </p>
+                <p class="mb-2">
+                    <strong>Haftungshinweis:</strong><br>
+                    Dieses Projekt wird als privates, nicht-kommerzielles Open-Source-Projekt bereitgestellt.
+                    Die Inhalte wurden mit Sorgfalt erstellt, es wird jedoch keine Gew&auml;hr f&uuml;r Richtigkeit,
+                    Vollst&auml;ndigkeit oder Aktualit&auml;t &uuml;bernommen. Die Nutzung der Simulationsergebnisse
+                    erfolgt auf eigene Verantwortung.
+                </p>
+                <p class="mb-2">
+                    <strong>Urheberrecht &amp; Lizenz:</strong><br>
+                    Der zugrunde liegende Modellcode
+                    (<a href="https://github.com/HydrologyFrankfurt/ReWaterGAP" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800">ReWaterGAP</a>)
+                    steht unter der
+                    <a href="https://www.gnu.org/licenses/lgpl-3.0.html" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800">GNU Lesser General Public License v3 (LGPL-v3)</a>.
+                    Der Online-WaterGAP-spezifische Code im Verzeichnis <code class="bg-gray-100 px-1 rounded">online/</code> steht ebenfalls unter LGPL-v3.
+                </p>
+                <p>
+                    <strong>Streitbeilegung:</strong><br>
+                    Die Europ&auml;ische Kommission stellt eine Plattform zur Online-Streitbeilegung bereit:
+                    <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800">ec.europa.eu/consumers/odr</a>.
+                    Zur Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle sind wir nicht verpflichtet und nicht bereit.
+                </p>
             </div>
         </div>
     </footer>
@@ -1459,9 +1494,10 @@ Browser receives status updates, logs, result maps</pre>
             // File browser
             fileBrowser: { path: '', entries: [], loading: false, breadcrumbs: [] },
 
-            // Footer diagnostics
+            // Footer
             diagnostics: null,
             showDiagnostics: false,
+            showImpressum: false,
             diagInterval: null,
 
             // Variable descriptions from WaterGAP glossary (name — description [unit])
