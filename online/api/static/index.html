@@ -40,32 +40,32 @@
         <!-- Navigation tabs -->
         <div class="max-w-5xl mx-auto px-6">
             <nav class="flex gap-0 -mb-px">
-                <button @click="page = 'welcome'"
+                <button @click="navigateTo('welcome')"
                         class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
                         :class="page === 'welcome' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Welcome
                 </button>
-                <button @click="page = 'simulation'"
+                <button @click="navigateTo('simulation')"
                         class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
                         :class="page === 'simulation' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Simulation
                 </button>
-                <button @click="page = 'runs'; loadRuns()"
+                <button @click="navigateTo('runs')"
                         class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
                         :class="page === 'runs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Runs
                 </button>
-                <button @click="page = 'visualization'; initVisualizationPage()"
+                <button @click="navigateTo('visualization')"
                         class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
                         :class="page === 'visualization' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Visualization
                 </button>
-                <button @click="page = 'files'; loadFiles('')"
+                <button @click="navigateTo('files')"
                         class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
                         :class="page === 'files' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Files
                 </button>
-                <button @click="page = 'docs'"
+                <button @click="navigateTo('docs')"
                         class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
                         :class="page === 'docs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Docs
@@ -174,12 +174,12 @@
 
             <!-- Quick links -->
             <div class="flex flex-wrap gap-3 justify-center mt-6">
-                <button @click="page = 'simulation'"
+                <button @click="navigateTo('simulation')"
                         class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     Start a Simulation
                 </button>
-                <button @click="page = 'docs'"
+                <button @click="navigateTo('docs')"
                         class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors border border-gray-300 shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     Read the Docs
@@ -738,7 +738,7 @@
                 <div x-show="runs.length === 0" class="text-center py-12 text-gray-400">
                     <svg class="w-12 h-12 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                     <p>No simulation runs yet.</p>
-                    <button @click="page = 'simulation'" class="mt-3 text-sm text-blue-600 hover:underline">Start your first simulation</button>
+                    <button @click="navigateTo('simulation')" class="mt-3 text-sm text-blue-600 hover:underline">Start your first simulation</button>
                 </div>
 
                 <!-- Runs list -->
@@ -1616,6 +1616,32 @@ Browser receives status updates, logs, result maps</pre>
 
             // --- Init ---
 
+            // --- Hash-based routing ---
+
+            navigateTo(page, extra) {
+                let hash = '#' + page;
+                if (extra) hash += '/' + extra;
+                history.pushState({ page, extra }, '', hash);
+                this._applyRoute(page, extra);
+            },
+
+            _applyRoute(page, extra) {
+                const validPages = ['welcome', 'simulation', 'runs', 'visualization', 'files', 'docs'];
+                if (!validPages.includes(page)) page = 'welcome';
+                this.page = page;
+                if (page === 'runs') this.loadRuns();
+                if (page === 'visualization') this.initVisualizationPage();
+                if (page === 'files') this.loadFiles(extra || '', true);
+            },
+
+            _parseHash() {
+                const hash = location.hash.replace(/^#/, '');
+                if (!hash) return { page: 'welcome', extra: '' };
+                const slash = hash.indexOf('/');
+                if (slash === -1) return { page: hash, extra: '' };
+                return { page: hash.substring(0, slash), extra: hash.substring(slash + 1) };
+            },
+
             async init() {
                 try {
                     const [presetsRes, inputRes] = await Promise.all([
@@ -1641,6 +1667,7 @@ Browser receives status updates, logs, result maps</pre>
                 });
 
                 // Check for active job (page-load recovery)
+                let hasActiveJob = false;
                 try {
                     const activeRes = await fetch(API_BASE + '/api/active-job');
                     const activeData = await activeRes.json();
@@ -1648,7 +1675,7 @@ Browser receives status updates, logs, result maps</pre>
                         this.currentJob = activeData.job_id;
                         this.currentRunNumber = activeData.run_number || null;
                         this.jobStatus = 'running';
-                        this.page = 'runs';
+                        hasActiveJob = true;
                         this.startPolling();
                         this.loadRuns();
                         this.startResourcePolling();
@@ -1656,6 +1683,29 @@ Browser receives status updates, logs, result maps</pre>
                 } catch (e) {
                     console.warn('Could not check for active job:', e);
                 }
+
+                // Apply initial route from URL hash
+                const { page, extra } = this._parseHash();
+                if (hasActiveJob && !location.hash) {
+                    this.page = 'runs';
+                    history.replaceState({ page: 'runs', extra: '' }, '', '#runs');
+                } else {
+                    this.page = page;
+                    if (page === 'runs') this.loadRuns();
+                    if (page === 'visualization') this.initVisualizationPage();
+                    if (page === 'files') this.loadFiles(extra || '', true);
+                    history.replaceState({ page, extra }, '', location.hash || '#welcome');
+                }
+
+                // Listen for back/forward
+                window.addEventListener('popstate', (e) => {
+                    if (e.state && e.state.page) {
+                        this._applyRoute(e.state.page, e.state.extra);
+                    } else {
+                        const r = this._parseHash();
+                        this._applyRoute(r.page, r.extra);
+                    }
+                });
 
                 // Load diagnostics initially and refresh every 30s
                 this.fetchDiagnostics();
@@ -1679,8 +1729,12 @@ Browser receives status updates, logs, result maps</pre>
 
             // --- File browser methods ---
 
-            async loadFiles(path) {
+            async loadFiles(path, skipHistory) {
                 this.fileBrowser.loading = true;
+                if (!skipHistory) {
+                    const hash = '#files' + (path ? '/' + path : '');
+                    history.pushState({ page: 'files', extra: path || '' }, '', hash);
+                }
                 try {
                     const res = await fetch(API_BASE + '/api/files?path=' + encodeURIComponent(path));
                     const data = await res.json();
@@ -2076,9 +2130,8 @@ Browser receives status updates, logs, result maps</pre>
                     this.currentRunNumber = data.run_number || null;
                     this.jobStatus = 'running';
                     this.logOutput = '';
-                    this.page = 'runs';
+                    this.navigateTo('runs');
                     this.startPolling();
-                    this.loadRuns();
                     this.startResourcePolling();
                 } catch (e) {
                     alert('Connection error: ' + e.message);
