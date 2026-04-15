@@ -199,6 +199,7 @@ class SimulationConfig(BaseModel):
     time_step: Optional[TimeStep] = None
     simulation_extent: Optional[SimulationExtent] = None
     calibrate: Optional[CalibrateWaterGAP] = None
+    run_by: Optional[str] = ""
     vb_fluxes: Optional[VerticalWaterBalanceFluxes] = None
     vb_storages: Optional[VerticalWaterBalanceStorages] = None
     lb_fluxes: Optional[LateralWaterBalanceFluxes] = None
@@ -524,6 +525,12 @@ def start_simulation(config: SimulationConfig):
     with open(config_path, "w") as f:
         json.dump(watergap_config, f, indent=2)
 
+    # Save metadata (run_by, etc.)
+    run_by = getattr(config, "run_by", "") or ""
+    meta = {"run_by": run_by}
+    with open(job_dir / "meta.json", "w") as f:
+        json.dump(meta, f)
+
     # Start subprocess
     log_path = job_dir / "simulation.log"
     env = os.environ.copy()
@@ -704,11 +711,21 @@ def list_jobs():
         except Exception:
             pass
 
+        # Read run_by from meta.json
+        run_by = ""
+        meta_path = d / "meta.json"
+        if meta_path.exists():
+            try:
+                run_by = json.loads(meta_path.read_text()).get("run_by", "")
+            except Exception:
+                pass
+
         jobs.append({
             "job_id": d.name,
             "run_number": dir_number[d.name],
             "status": status,
             "started_at": started_at,
+            "run_by": run_by,
             "config_summary": config_summary,
             "has_log": log_path.exists(),
             "period": f"{config_summary.get('start', '')} to {config_summary.get('end', '')}" if config_summary.get('start') else "",
@@ -859,6 +876,20 @@ def list_files(path: str = ""):
             media_type="application/octet-stream",
         )
 
+    # Build run number map if browsing top-level runs directory
+    run_number_map = {}
+    run_by_map = {}
+    if root_key == "runs" and len(parts) == 1:
+        all_run_dirs = sorted(d.name for d in roots["runs"].iterdir() if d.is_dir())
+        run_number_map = {name: i + 1 for i, name in enumerate(all_run_dirs)}
+        for name in all_run_dirs:
+            meta_path = roots["runs"] / name / "meta.json"
+            if meta_path.exists():
+                try:
+                    run_by_map[name] = json.loads(meta_path.read_text()).get("run_by", "")
+                except Exception:
+                    pass
+
     # List directory
     entries = []
     for item in sorted(resolved.iterdir()):
@@ -869,12 +900,17 @@ def list_files(path: str = ""):
                              and not _.name.startswith(".") and _.name != ".gitkeep")
             total_size = sum(f.stat().st_size for f in item.rglob("*")
                              if f.is_file() and not f.name.startswith(".") and f.name != ".gitkeep")
-            entries.append({
+            entry = {
                 "name": item.name,
                 "type": "directory",
                 "children_count": file_count,
                 "total_size": total_size,
-            })
+            }
+            if item.name in run_number_map:
+                entry["run_number"] = run_number_map[item.name]
+            if item.name in run_by_map and run_by_map[item.name]:
+                entry["run_by"] = run_by_map[item.name]
+            entries.append(entry)
         else:
             entries.append({
                 "name": item.name,
