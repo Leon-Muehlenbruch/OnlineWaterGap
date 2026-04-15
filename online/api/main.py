@@ -738,10 +738,13 @@ def get_active_job():
 @app.get("/api/resources")
 def get_resources():
     """Return current system resource usage."""
+    result = {}
+
+    # --- Memory ---
     if HAS_PSUTIL:
         mem = psutil.virtual_memory()
         swap = psutil.swap_memory()
-        return {
+        result.update({
             "ram_total_gb": round(mem.total / (1024**3), 1),
             "ram_used_gb": round(mem.used / (1024**3), 1),
             "ram_percent": mem.percent,
@@ -749,10 +752,8 @@ def get_resources():
             "swap_used_gb": round(swap.used / (1024**3), 1),
             "swap_percent": swap.percent,
             "cpu_percent": psutil.cpu_percent(interval=0.5),
-        }
+        })
     else:
-        # Fallback: parse /proc
-        result = {}
         try:
             with open("/proc/meminfo") as f:
                 info = {}
@@ -763,17 +764,39 @@ def get_resources():
                 avail = info.get("MemAvailable", 0) / (1024**2)
                 swap_total = info.get("SwapTotal", 0) / (1024**2)
                 swap_free = info.get("SwapFree", 0) / (1024**2)
-                result = {
+                result.update({
                     "ram_total_gb": round(total, 1),
                     "ram_used_gb": round(total - avail, 1),
                     "ram_percent": round((total - avail) / total * 100, 1) if total else 0,
                     "swap_total_gb": round(swap_total, 1),
                     "swap_used_gb": round(swap_total - swap_free, 1),
                     "swap_percent": round((swap_total - swap_free) / swap_total * 100, 1) if swap_total else 0,
-                }
+                })
         except Exception:
             pass
-        return result
+
+    # --- Disk ---
+    try:
+        import shutil
+        usage = shutil.disk_usage("/")
+        result.update({
+            "disk_total_gb": round(usage.total / (1024**3), 1),
+            "disk_used_gb": round(usage.used / (1024**3), 1),
+            "disk_free_gb": round(usage.free / (1024**3), 1),
+            "disk_percent": round(usage.used / usage.total * 100, 1),
+        })
+    except Exception:
+        pass
+
+    # --- Jobs count & size ---
+    try:
+        jobs_path = JOBS_DIR
+        job_count = sum(1 for d in jobs_path.iterdir() if d.is_dir()) if jobs_path.exists() else 0
+        result["job_count"] = job_count
+    except Exception:
+        result["job_count"] = 0
+
+    return result
 
 
 class PresetSave(BaseModel):
