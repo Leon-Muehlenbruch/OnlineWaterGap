@@ -799,6 +799,96 @@ def get_resources():
     return result
 
 
+# ---------------------------------------------------------------------------
+# File Browser
+# ---------------------------------------------------------------------------
+
+@app.get("/api/files")
+def list_files(path: str = ""):
+    """Browse server files: jobs outputs, input data, uploads."""
+    # Define allowed root directories
+    roots = {
+        "runs": JOBS_DIR,
+        "input_data": INPUT_DATA_DIR,
+        "uploads": UPLOADS_DIR,
+    }
+
+    # Top-level: return root categories
+    if not path:
+        categories = []
+        for key, root in roots.items():
+            if root.exists():
+                file_count = sum(1 for _ in root.rglob("*") if _.is_file()
+                                 and not _.name.startswith(".") and _.name != ".gitkeep")
+                total_size = sum(f.stat().st_size for f in root.rglob("*")
+                                 if f.is_file() and not f.name.startswith(".") and f.name != ".gitkeep")
+                categories.append({
+                    "name": key,
+                    "type": "directory",
+                    "children_count": file_count,
+                    "total_size": total_size,
+                })
+        return {"path": "", "entries": categories}
+
+    # Resolve path within allowed roots
+    parts = path.strip("/").split("/")
+    root_key = parts[0]
+    if root_key not in roots:
+        raise HTTPException(status_code=400, detail=f"Unknown root: {root_key}")
+
+    resolved = roots[root_key]
+    if len(parts) > 1:
+        resolved = resolved / "/".join(parts[1:])
+
+    # Security: prevent traversal
+    try:
+        resolved = resolved.resolve()
+        root_resolved = roots[root_key].resolve()
+        if not str(resolved).startswith(str(root_resolved)):
+            raise HTTPException(status_code=403, detail="Access denied")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid path")
+
+    if not resolved.exists():
+        raise HTTPException(status_code=404, detail="Path not found")
+
+    if resolved.is_file():
+        return FileResponse(
+            resolved,
+            filename=resolved.name,
+            media_type="application/octet-stream",
+        )
+
+    # List directory
+    entries = []
+    for item in sorted(resolved.iterdir()):
+        if item.name.startswith(".") or item.name == ".gitkeep":
+            continue
+        if item.is_dir():
+            file_count = sum(1 for _ in item.rglob("*") if _.is_file()
+                             and not _.name.startswith(".") and _.name != ".gitkeep")
+            total_size = sum(f.stat().st_size for f in item.rglob("*")
+                             if f.is_file() and not f.name.startswith(".") and f.name != ".gitkeep")
+            entries.append({
+                "name": item.name,
+                "type": "directory",
+                "children_count": file_count,
+                "total_size": total_size,
+            })
+        else:
+            entries.append({
+                "name": item.name,
+                "type": "file",
+                "size": item.stat().st_size,
+                "modified": datetime.fromtimestamp(item.stat().st_mtime).isoformat(),
+            })
+    return {"path": path, "entries": entries}
+
+
+# ---------------------------------------------------------------------------
+# Presets
+# ---------------------------------------------------------------------------
+
 class PresetSave(BaseModel):
     name: str
     config: dict

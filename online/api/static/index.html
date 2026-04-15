@@ -60,6 +60,11 @@
                         :class="page === 'visualization' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Visualization
                 </button>
+                <button @click="page = 'files'; loadFiles('')"
+                        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
+                        :class="page === 'files' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
+                    Files
+                </button>
                 <button @click="page = 'docs'"
                         class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
                         :class="page === 'docs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
@@ -1042,6 +1047,118 @@
         </div><!-- end page=visualization -->
 
         <!-- ################################################################ -->
+        <!-- PAGE: Files                                                      -->
+        <!-- ################################################################ -->
+        <div x-show="page === 'files'" x-cloak>
+
+            <h2 class="text-lg font-bold text-gray-800 mb-4">File Browser</h2>
+
+            <!-- Breadcrumbs -->
+            <div class="flex items-center gap-1 text-sm mb-4 flex-wrap">
+                <template x-for="(crumb, idx) in fileBrowser.breadcrumbs" :key="crumb.path">
+                    <div class="flex items-center gap-1">
+                        <span x-show="idx > 0" class="text-gray-400">/</span>
+                        <button @click="loadFiles(crumb.path)"
+                                class="hover:text-blue-600 transition-colors"
+                                :class="idx === fileBrowser.breadcrumbs.length - 1 ? 'text-gray-800 font-medium' : 'text-blue-600'">
+                            <span x-text="crumb.label === 'Root' ? 'All Files' : (rootLabel(crumb.label) !== crumb.label && idx === 1 ? rootLabel(crumb.label) : crumb.label)"></span>
+                        </button>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Loading -->
+            <div x-show="fileBrowser.loading" class="text-sm text-gray-400 py-8 text-center">Loading...</div>
+
+            <!-- Root level: show cards -->
+            <template x-if="!fileBrowser.loading && fileBrowser.path === ''">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <template x-for="entry in fileBrowser.entries" :key="entry.name">
+                        <button @click="loadFiles(entry.name)"
+                                class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 text-left hover:border-blue-300 hover:shadow-md transition-all group">
+                            <div class="flex items-center gap-3 mb-2">
+                                <!-- Folder icon -->
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                                     :class="entry.name === 'runs' ? 'bg-blue-100' : entry.name === 'input_data' ? 'bg-green-100' : 'bg-purple-100'">
+                                    <svg class="w-5 h-5" :class="entry.name === 'runs' ? 'text-blue-600' : entry.name === 'input_data' ? 'text-green-600' : 'text-purple-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800 group-hover:text-blue-600" x-text="rootLabel(entry.name)"></p>
+                                    <p class="text-xs text-gray-400" x-text="rootDescription(entry.name)"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">
+                                <span x-text="entry.children_count + ' files'"></span>
+                                <span x-text="formatFileSize(entry.total_size)"></span>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Directory listing -->
+            <template x-if="!fileBrowser.loading && fileBrowser.path !== ''">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div x-show="fileBrowser.entries.length === 0" class="p-6 text-center text-sm text-gray-400">
+                        This directory is empty.
+                    </div>
+                    <template x-for="(entry, idx) in fileBrowser.entries" :key="entry.name">
+                        <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+                             :class="idx > 0 ? 'border-t border-gray-100' : ''">
+                            <!-- Icon -->
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mr-3"
+                                 :class="entry.type === 'directory' ? 'bg-yellow-50' : 'bg-gray-50'">
+                                <template x-if="entry.type === 'directory'">
+                                    <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                </template>
+                                <template x-if="entry.type === 'file' && ['nc','nc4'].includes(entry.name.split('.').pop())">
+                                    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </template>
+                                <template x-if="entry.type === 'file' && !['nc','nc4'].includes(entry.name.split('.').pop())">
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                </template>
+                            </div>
+                            <!-- Name & info -->
+                            <div class="flex-1 min-w-0">
+                                <template x-if="entry.type === 'directory'">
+                                    <button @click="loadFiles(fileBrowser.path + '/' + entry.name)"
+                                            class="text-sm font-medium text-gray-800 hover:text-blue-600 transition-colors truncate block text-left w-full"
+                                            x-text="entry.name"></button>
+                                </template>
+                                <template x-if="entry.type === 'file'">
+                                    <span class="text-sm text-gray-800 truncate block" x-text="entry.name"></span>
+                                </template>
+                            </div>
+                            <!-- Size / meta -->
+                            <div class="text-xs text-gray-400 text-right flex-shrink-0 ml-4" style="min-width: 80px;">
+                                <template x-if="entry.type === 'directory'">
+                                    <div>
+                                        <span x-text="entry.children_count + ' files'"></span>
+                                        <br>
+                                        <span x-text="formatFileSize(entry.total_size)"></span>
+                                    </div>
+                                </template>
+                                <template x-if="entry.type === 'file'">
+                                    <span x-text="formatFileSize(entry.size)"></span>
+                                </template>
+                            </div>
+                            <!-- Download button for files -->
+                            <template x-if="entry.type === 'file'">
+                                <a :href="apiBase + '/api/files?path=' + encodeURIComponent(fileBrowser.path + '/' + entry.name)"
+                                   download
+                                   class="ml-3 p-2 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors flex-shrink-0"
+                                   title="Download">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                </a>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+        </div><!-- end page=files -->
+
+        <!-- ################################################################ -->
         <!-- DOCS PAGE                                                        -->
         <!-- ################################################################ -->
         <div x-show="page === 'docs'" x-cloak>
@@ -1268,6 +1385,9 @@ Browser receives status updates, logs, result maps</pre>
 
     function app() {
         return {
+            // API base for use in templates
+            apiBase: API_BASE,
+
             // Top-level navigation
             page: 'welcome',
 
@@ -1315,6 +1435,9 @@ Browser receives status updates, logs, result maps</pre>
 
             // Help tooltip state (which info box is open)
             openHelp: '',
+
+            // File browser
+            fileBrowser: { path: '', entries: [], loading: false, breadcrumbs: [] },
 
             // Footer diagnostics
             diagnostics: null,
@@ -1552,6 +1675,62 @@ Browser receives status updates, logs, result maps</pre>
                 if (percent > 90) return 'bg-red-500';
                 if (percent > 70) return 'bg-yellow-500';
                 return 'bg-green-500';
+            },
+
+            // --- File browser methods ---
+
+            async loadFiles(path) {
+                this.fileBrowser.loading = true;
+                try {
+                    const res = await fetch(API_BASE + '/api/files?path=' + encodeURIComponent(path));
+                    const data = await res.json();
+                    this.fileBrowser.path = data.path || '';
+                    this.fileBrowser.entries = data.entries || [];
+                    // Build breadcrumbs
+                    const parts = (data.path || '').split('/').filter(Boolean);
+                    const crumbs = [{ label: 'Root', path: '' }];
+                    let acc = '';
+                    for (const p of parts) {
+                        acc += (acc ? '/' : '') + p;
+                        crumbs.push({ label: p, path: acc });
+                    }
+                    this.fileBrowser.breadcrumbs = crumbs;
+                } catch (e) {
+                    console.warn('File browser error:', e);
+                }
+                this.fileBrowser.loading = false;
+            },
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+            },
+
+            fileIcon(entry) {
+                if (entry.type === 'directory') return 'folder';
+                const ext = entry.name.split('.').pop().toLowerCase();
+                if (['nc', 'nc4'].includes(ext)) return 'netcdf';
+                if (['csv', 'txt'].includes(ext)) return 'text';
+                if (ext === 'json') return 'json';
+                if (ext === 'log') return 'log';
+                return 'file';
+            },
+
+            rootLabel(name) {
+                const labels = { runs: 'Simulation Runs', input_data: 'Input Data', uploads: 'Uploads' };
+                return labels[name] || name;
+            },
+
+            rootDescription(name) {
+                const desc = {
+                    runs: 'Output files, configs, and logs from all simulation runs',
+                    input_data: 'Climate forcing, water use, and static input datasets',
+                    uploads: 'User-uploaded NetCDF files',
+                };
+                return desc[name] || '';
             },
 
             // --- Simulation page methods ---
