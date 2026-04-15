@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReWaterGAP Web</title>
+    <title>Online WaterGAP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
@@ -78,10 +78,9 @@
 
             <!-- Hero -->
             <div class="text-center mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome to ReWaterGAP Web</h2>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Online WaterGAP</h2>
                 <p class="text-gray-500 max-w-2xl mx-auto">
-                    A browser-based interface for the WaterGAP Global Hydrology Model.
-                    Configure, run, and visualize hydrological simulations — no local installation required.
+                    Run WaterGAP 2.2e in your browser.
                 </p>
             </div>
 
@@ -89,14 +88,13 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-5">
                 <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                     <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    What is this?
+                    About this project
                 </h3>
                 <p class="text-sm text-gray-600 leading-relaxed">
-                    ReWaterGAP Web is a thin web layer on top of the official
+                    Online WaterGAP puts a web interface around the official
                     <a href="https://github.com/HydrologyFrankfurt/ReWaterGAP" target="_blank" class="text-blue-600 hover:underline">ReWaterGAP</a>
-                    (WaterGAP 2.2e) code base. It does <strong>not</strong> modify the core model code in any way —
-                    the model directory, controller, calibration modules, and requirements are identical to the upstream repository.
-                    All online-specific code lives exclusively in the <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">online/</code> directory.
+                    (WaterGAP 2.2e) code. The model itself is untouched — same source, same dependencies, same results as running it locally.
+                    Everything web-related sits in the <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">online/</code> directory and doesn't interfere with the rest of the repository.
                 </p>
             </div>
 
@@ -104,35 +102,35 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-5">
                 <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                     <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    What can it do?
+                    Features
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="flex items-start gap-2.5">
                         <span class="mt-0.5 w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">1</span>
                         <div>
-                            <p class="text-sm font-medium text-gray-700">Configure simulations</p>
-                            <p class="text-xs text-gray-500">Set simulation periods, choose natural/anthropogenic modes, select output variables, toggle basin or global extent.</p>
+                            <p class="text-sm font-medium text-gray-700">Configuration</p>
+                            <p class="text-xs text-gray-500">Pick a time period, choose between natural and anthropogenic modes, select which variables to output, and decide between a global or basin-level run.</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-2.5">
                         <span class="mt-0.5 w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">2</span>
                         <div>
-                            <p class="text-sm font-medium text-gray-700">Run WaterGAP remotely</p>
-                            <p class="text-xs text-gray-500">Simulations run on a cloud server. Watch live logs, monitor resource usage, and close your browser without losing progress.</p>
+                            <p class="text-sm font-medium text-gray-700">Remote execution</p>
+                            <p class="text-xs text-gray-500">The simulation runs on a server, so you don't need WaterGAP installed locally. You can follow the log in real time or close the tab and come back later.</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-2.5">
                         <span class="mt-0.5 w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">3</span>
                         <div>
-                            <p class="text-sm font-medium text-gray-700">Visualize results</p>
-                            <p class="text-xs text-gray-500">Browse output variables on an interactive map, step through time series, or upload your own NetCDF files for comparison.</p>
+                            <p class="text-sm font-medium text-gray-700">Visualization</p>
+                            <p class="text-xs text-gray-500">View output variables as spatial maps, step through time, or upload your own NetCDF files to compare against.</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-2.5">
                         <span class="mt-0.5 w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">4</span>
                         <div>
-                            <p class="text-sm font-medium text-gray-700">Save &amp; reuse presets</p>
-                            <p class="text-xs text-gray-500">Export your configuration as JSON, import it later, or save named presets that persist across sessions.</p>
+                            <p class="text-sm font-medium text-gray-700">Presets</p>
+                            <p class="text-xs text-gray-500">Save a configuration under a name to reuse it later, or export/import configs as JSON files.</p>
                         </div>
                     </div>
                 </div>
@@ -142,28 +140,28 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-5">
                 <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                     <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    How to get started
+                    Getting started
                 </h3>
                 <div class="space-y-3">
                     <div class="flex items-start gap-3">
                         <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 text-xs font-bold">1</div>
                         <div>
-                            <p class="text-sm font-medium text-gray-700">Go to the Simulation tab</p>
-                            <p class="text-xs text-gray-500">Choose a preset or configure your simulation manually — set the time period, output variables, and simulation extent (global or single basin).</p>
+                            <p class="text-sm font-medium text-gray-700">Set up a simulation</p>
+                            <p class="text-xs text-gray-500">Head to the Simulation tab. Load a preset or build your config from scratch — time period, output variables, global vs. basin extent.</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
                         <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 text-xs font-bold">2</div>
                         <div>
-                            <p class="text-sm font-medium text-gray-700">Start the run</p>
-                            <p class="text-xs text-gray-500">Click "Start Simulation". You'll be taken to the Runs tab where you can watch the live log and monitor RAM/Swap usage. You can safely close the browser — the simulation keeps running.</p>
+                            <p class="text-sm font-medium text-gray-700">Run it</p>
+                            <p class="text-xs text-gray-500">Hit "Start Simulation". The Runs tab shows the live log and resource usage. The run keeps going even if you close the page.</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
                         <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 text-xs font-bold">3</div>
                         <div>
-                            <p class="text-sm font-medium text-gray-700">View results</p>
-                            <p class="text-xs text-gray-500">Once completed, go to the Visualization tab. Select your run from the dropdown, pick a variable, and explore the spatial maps across time steps.</p>
+                            <p class="text-sm font-medium text-gray-700">Look at the output</p>
+                            <p class="text-xs text-gray-500">Once the run finishes, open the Visualization tab. Pick the run and a variable, then browse the maps over time.</p>
                         </div>
                     </div>
                 </div>
