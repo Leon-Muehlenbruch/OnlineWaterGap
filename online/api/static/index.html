@@ -11,6 +11,9 @@
     <style>
         [x-cloak] { display: none !important; }
         .toggle-bg { transition: background-color 0.2s; }
+        /* Hide scrollbar on tab nav but keep scrollable */
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
         .log-output { font-family: 'Courier New', monospace; font-size: 0.75rem; }
         .drop-zone.dragover { border-color: #3b82f6; background-color: #eff6ff; }
         /* Info tooltip styles */
@@ -39,35 +42,36 @@
             </div>
         </div>
         <!-- Navigation tabs -->
-        <div class="max-w-5xl mx-auto px-6">
-            <nav class="flex gap-0 -mb-px">
+        <div class="max-w-5xl mx-auto px-6 overflow-x-auto scrollbar-hide">
+            <nav class="flex gap-0 -mb-px min-w-0">
                 <button @click="navigateTo('welcome')"
-                        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
+                        class="px-3 sm:px-5 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0"
                         :class="page === 'welcome' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Welcome
                 </button>
                 <button @click="navigateTo('simulation')"
-                        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
+                        class="px-3 sm:px-5 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0"
                         :class="page === 'simulation' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Simulation
                 </button>
                 <button @click="navigateTo('runs')"
-                        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
+                        class="px-3 sm:px-5 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0"
                         :class="page === 'runs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Runs
                 </button>
                 <button @click="navigateTo('visualization')"
-                        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
+                        class="px-3 sm:px-5 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0"
                         :class="page === 'visualization' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
-                    Visualization
+                    Viz
+                    <span class="hidden sm:inline">ualization</span>
                 </button>
                 <button @click="navigateTo('files')"
-                        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
+                        class="px-3 sm:px-5 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0"
                         :class="page === 'files' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Files
                 </button>
                 <button @click="navigateTo('docs')"
-                        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
+                        class="px-3 sm:px-5 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0"
                         :class="page === 'docs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Docs
                 </button>
