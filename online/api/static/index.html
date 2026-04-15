@@ -40,6 +40,11 @@
         <!-- Navigation tabs -->
         <div class="max-w-5xl mx-auto px-6">
             <nav class="flex gap-0 -mb-px">
+                <button @click="page = 'welcome'"
+                        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
+                        :class="page === 'welcome' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
+                    Welcome
+                </button>
                 <button @click="page = 'simulation'"
                         class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
                         :class="page === 'simulation' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
@@ -65,6 +70,125 @@
     </header>
 
     <main class="max-w-5xl mx-auto px-6 py-8">
+
+        <!-- ################################################################ -->
+        <!-- PAGE: Welcome                                                    -->
+        <!-- ################################################################ -->
+        <div x-show="page === 'welcome'" x-cloak>
+
+            <!-- Hero -->
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome to ReWaterGAP Web</h2>
+                <p class="text-gray-500 max-w-2xl mx-auto">
+                    A browser-based interface for the WaterGAP Global Hydrology Model.
+                    Configure, run, and visualize hydrological simulations — no local installation required.
+                </p>
+            </div>
+
+            <!-- What is this -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-5">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    What is this?
+                </h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    ReWaterGAP Web is a thin web layer on top of the official
+                    <a href="https://github.com/HydrologyFrankfurt/ReWaterGAP" target="_blank" class="text-blue-600 hover:underline">ReWaterGAP</a>
+                    (WaterGAP 2.2e) code base. It does <strong>not</strong> modify the core model code in any way —
+                    the model directory, controller, calibration modules, and requirements are identical to the upstream repository.
+                    All online-specific code lives exclusively in the <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">online/</code> directory.
+                </p>
+            </div>
+
+            <!-- What it can do -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-5">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    What can it do?
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="flex items-start gap-2.5">
+                        <span class="mt-0.5 w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">1</span>
+                        <div>
+                            <p class="text-sm font-medium text-gray-700">Configure simulations</p>
+                            <p class="text-xs text-gray-500">Set simulation periods, choose natural/anthropogenic modes, select output variables, toggle basin or global extent.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                        <span class="mt-0.5 w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">2</span>
+                        <div>
+                            <p class="text-sm font-medium text-gray-700">Run WaterGAP remotely</p>
+                            <p class="text-xs text-gray-500">Simulations run on a cloud server. Watch live logs, monitor resource usage, and close your browser without losing progress.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                        <span class="mt-0.5 w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">3</span>
+                        <div>
+                            <p class="text-sm font-medium text-gray-700">Visualize results</p>
+                            <p class="text-xs text-gray-500">Browse output variables on an interactive map, step through time series, or upload your own NetCDF files for comparison.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                        <span class="mt-0.5 w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-xs font-bold">4</span>
+                        <div>
+                            <p class="text-sm font-medium text-gray-700">Save &amp; reuse presets</p>
+                            <p class="text-xs text-gray-500">Export your configuration as JSON, import it later, or save named presets that persist across sessions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How to use -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-5">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    How to get started
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 text-xs font-bold">1</div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-700">Go to the Simulation tab</p>
+                            <p class="text-xs text-gray-500">Choose a preset or configure your simulation manually — set the time period, output variables, and simulation extent (global or single basin).</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 text-xs font-bold">2</div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-700">Start the run</p>
+                            <p class="text-xs text-gray-500">Click "Start Simulation". You'll be taken to the Runs tab where you can watch the live log and monitor RAM/Swap usage. You can safely close the browser — the simulation keeps running.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center flex-shrink-0 text-xs font-bold">3</div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-700">View results</p>
+                            <p class="text-xs text-gray-500">Once completed, go to the Visualization tab. Select your run from the dropdown, pick a variable, and explore the spatial maps across time steps.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick links -->
+            <div class="flex flex-wrap gap-3 justify-center mt-6">
+                <button @click="page = 'simulation'"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Start a Simulation
+                </button>
+                <button @click="page = 'docs'"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors border border-gray-300 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Read the Docs
+                </button>
+                <a href="https://hydrologyfrankfurt.github.io/ReWaterGAP/" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors border border-gray-300 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    Full Model Documentation
+                </a>
+            </div>
+
+        </div><!-- end page=welcome -->
 
         <!-- ################################################################ -->
         <!-- PAGE: Simulation                                                 -->
@@ -1147,7 +1271,7 @@ Browser receives status updates, logs, result maps</pre>
     function app() {
         return {
             // Top-level navigation
-            page: 'simulation',
+            page: 'welcome',
 
             // Simulation page state
             presets: [],
