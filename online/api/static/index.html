@@ -55,6 +55,11 @@
                         :class="page === 'visualization' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
                     Visualization
                 </button>
+                <button @click="page = 'docs'"
+                        class="px-5 py-3 text-sm font-medium border-b-2 transition-colors"
+                        :class="page === 'docs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'">
+                    Docs
+                </button>
             </nav>
         </div>
     </header>
@@ -913,6 +918,148 @@
             </div>
 
         </div><!-- end page=visualization -->
+
+        <!-- ################################################################ -->
+        <!-- DOCS PAGE                                                        -->
+        <!-- ################################################################ -->
+        <div x-show="page === 'docs'" x-cloak>
+
+            <!-- Link to full docs -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+                <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div>
+                    <p class="text-sm text-blue-800">This page shows a summary of the online infrastructure. For the full ReWaterGAP documentation (model processes, user guide, tutorials, and more), visit:</p>
+                    <a href="https://hydrologyfrankfurt.github.io/ReWaterGAP/" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-1 mt-1 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">
+                        hydrologyfrankfurt.github.io/ReWaterGAP
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Online Infrastructure content -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Online Infrastructure</h2>
+                <p class="text-sm text-gray-600 mb-4">
+                    OnlineWaterGap wraps the existing ReWaterGAP command-line application in a web-based frontend
+                    so that users can configure, launch, and visualize hydrological simulations from any modern browser.
+                </p>
+
+                <h3 class="text-sm font-semibold text-gray-700 mt-6 mb-2">Architecture</h3>
+                <p class="text-sm text-gray-600 mb-3">The stack consists of three components:</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <div class="text-xs font-semibold text-blue-600 mb-1">Frontend</div>
+                        <p class="text-xs text-gray-600">Static HTML/JS served by Vercel. Single-page app, no build step required.</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <div class="text-xs font-semibold text-green-600 mb-1">Backend</div>
+                        <p class="text-xs text-gray-600">FastAPI running in Docker on a Hetzner cloud server. Spawns <code class="bg-gray-200 px-1 rounded text-xs">run_watergap.py</code> as a subprocess.</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <div class="text-xs font-semibold text-purple-600 mb-1">Database</div>
+                        <p class="text-xs text-gray-600">Supabase PostgreSQL instance tracking simulation jobs and uploaded datasets.</p>
+                    </div>
+                </div>
+
+                <h3 class="text-sm font-semibold text-gray-700 mt-6 mb-2">Request Flow</h3>
+                <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+                    <pre class="text-green-400 text-xs leading-relaxed">Browser
+  │
+  ▼
+Vercel  (online-water-gap.vercel.app)
+  │  serves static HTML/JS
+  │  proxies /api/* via rewrite rules
+  ▼
+Hetzner Docker host  (FastAPI + Uvicorn)
+  │  starts run_watergap.py as subprocess
+  ▼
+WaterGAP simulation
+  │  reads input_data/ (mounted read-only)
+  │  writes results to output_data/
+  ▼
+Browser receives status updates, logs, result maps</pre>
+                </div>
+
+                <h3 class="text-sm font-semibold text-gray-700 mt-6 mb-2">Repository Layout</h3>
+                <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+                    <pre class="text-green-400 text-xs leading-relaxed">online/
+├── api/
+│   ├── main.py          # FastAPI application
+│   └── static/          # Frontend (HTML, JS, CSS)
+├── Dockerfile           # Container image definition
+├── docker-compose.yml   # Service orchestration + volumes
+├── run_web.py           # Dev helper: installs deps + starts uvicorn
+└── vercel.json          # Vercel routing &amp; API proxy config</pre>
+                </div>
+
+                <h3 class="text-sm font-semibold text-gray-700 mt-6 mb-2">Docker Volumes</h3>
+                <div class="overflow-x-auto mb-4">
+                    <table class="w-full text-xs text-left border border-gray-200 rounded">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 font-semibold text-gray-600 border-b">Volume</th>
+                                <th class="px-3 py-2 font-semibold text-gray-600 border-b">Mode</th>
+                                <th class="px-3 py-2 font-semibold text-gray-600 border-b">Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600">
+                            <tr class="border-b"><td class="px-3 py-2 font-mono">input_data</td><td class="px-3 py-2">read-only</td><td class="px-3 py-2">Climate forcing, water use, static data</td></tr>
+                            <tr class="border-b"><td class="px-3 py-2 font-mono">watergap-jobs</td><td class="px-3 py-2">read-write</td><td class="px-3 py-2">Per-run config, logs, status</td></tr>
+                            <tr class="border-b"><td class="px-3 py-2 font-mono">watergap-uploads</td><td class="px-3 py-2">read-write</td><td class="px-3 py-2">User-uploaded NetCDF files</td></tr>
+                            <tr class="border-b"><td class="px-3 py-2 font-mono">watergap-output</td><td class="px-3 py-2">read-write</td><td class="px-3 py-2">Simulation result files</td></tr>
+                            <tr><td class="px-3 py-2 font-mono">watergap-presets</td><td class="px-3 py-2">read-write</td><td class="px-3 py-2">Saved configuration presets</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="text-sm font-semibold text-gray-700 mt-6 mb-2">API Endpoints</h3>
+                <div class="overflow-x-auto mb-4">
+                    <table class="w-full text-xs text-left border border-gray-200 rounded">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 font-semibold text-gray-600 border-b">Method</th>
+                                <th class="px-3 py-2 font-semibold text-gray-600 border-b">Path</th>
+                                <th class="px-3 py-2 font-semibold text-gray-600 border-b">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600">
+                            <tr class="border-b"><td class="px-3 py-2 font-mono text-green-600">GET</td><td class="px-3 py-2 font-mono">/api/health</td><td class="px-3 py-2">Health check</td></tr>
+                            <tr class="border-b"><td class="px-3 py-2 font-mono text-blue-600">POST</td><td class="px-3 py-2 font-mono">/api/simulate</td><td class="px-3 py-2">Start a new simulation</td></tr>
+                            <tr class="border-b"><td class="px-3 py-2 font-mono text-green-600">GET</td><td class="px-3 py-2 font-mono">/api/status/{job_id}</td><td class="px-3 py-2">Poll job status</td></tr>
+                            <tr class="border-b"><td class="px-3 py-2 font-mono text-blue-600">POST</td><td class="px-3 py-2 font-mono">/api/cancel/{job_id}</td><td class="px-3 py-2">Terminate a running simulation</td></tr>
+                            <tr class="border-b"><td class="px-3 py-2 font-mono text-green-600">GET</td><td class="px-3 py-2 font-mono">/api/jobs</td><td class="px-3 py-2">List all runs with status</td></tr>
+                            <tr class="border-b"><td class="px-3 py-2 font-mono text-green-600">GET</td><td class="px-3 py-2 font-mono">/api/resources</td><td class="px-3 py-2">Server resource usage (RAM, Swap, Disk)</td></tr>
+                            <tr class="border-b"><td class="px-3 py-2 font-mono text-green-600">GET</td><td class="px-3 py-2 font-mono">/api/presets</td><td class="px-3 py-2">List saved presets</td></tr>
+                            <tr class="border-b"><td class="px-3 py-2 font-mono text-green-600">GET</td><td class="px-3 py-2 font-mono">/api/input-datasets</td><td class="px-3 py-2">List available input data bundles</td></tr>
+                            <tr><td class="px-3 py-2 font-mono text-green-600">GET</td><td class="px-3 py-2 font-mono">/api/map/{source}/{var}</td><td class="px-3 py-2">Render a spatial map (PNG)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="text-sm font-semibold text-gray-700 mt-6 mb-2">Changes Relative to the Original Code Base</h3>
+                <p class="text-sm text-gray-600">
+                    The online version keeps changes minimal. The core model code
+                    (<code class="bg-gray-100 px-1 rounded text-xs">model/</code>,
+                    <code class="bg-gray-100 px-1 rounded text-xs">controller/</code>,
+                    <code class="bg-gray-100 px-1 rounded text-xs">calibration/</code>,
+                    <code class="bg-gray-100 px-1 rounded text-xs">view/</code>) and
+                    <code class="bg-gray-100 px-1 rounded text-xs">requirements.txt</code>
+                    are identical to the upstream ReWaterGAP repository. All additions live exclusively in the
+                    <code class="bg-gray-100 px-1 rounded text-xs">online/</code> directory.
+                </p>
+            </div>
+
+            <!-- Link to full docs (bottom) -->
+            <div class="mt-6 text-center">
+                <a href="https://hydrologyfrankfurt.github.io/ReWaterGAP/online_infrastructure/" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                    View full Online Infrastructure documentation
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </a>
+            </div>
+
+        </div><!-- end page=docs -->
 
     </main>
 
